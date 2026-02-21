@@ -21,7 +21,7 @@ function FirstFragment() {
       <div className="container">
         <h1 className="fragment-title">The First Mission</h1>
         <div className="image-container">
-          <img src="/src/assets/firstmission.png" alt="First Mission" />
+          <img src="/assets/firstmission.png" alt="First Mission" />
         </div>
       </div>
     </div>

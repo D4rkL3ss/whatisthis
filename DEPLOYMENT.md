@@ -24,7 +24,7 @@ git push
 4. Fill in the settings:
    - **Name**: `fractured-abyss` (or your preferred name)
    - **Environment**: `Node`
-   - **Build Command**: `npm ci && npm run build`
+   - **Build Command**: `npm ci --include=dev && npm run build`
    - **Start Command**: `npm start`
    - **Plan**: Free (or Paid if you want better performance)
 

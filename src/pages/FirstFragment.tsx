@@ -1,4 +1,5 @@
 import './CSS/FirstFragment.css'
+import firstMissionImg from '../assets/firstmission.png'
 
 function FirstFragment() {
   const handleGoBack = () => {
@@ -21,7 +22,7 @@ function FirstFragment() {
       <div className="container">
         <h1 className="fragment-title">The First Mission</h1>
         <div className="image-container">
-          <img src="/assets/firstmission.png" alt="First Mission" />
+          <img src={firstMissionImg} alt="First Mission" />
         </div>
       </div>
     </div>

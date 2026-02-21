@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './styles/fonts.css';
 import './App.css'
 import FirstFragment from './pages/FirstFragment'
+import SecondFragment from './pages/SecondFragment'
 
 function App() {
   const [timeLeft, setTimeLeft] = useState({
@@ -13,17 +14,50 @@ function App() {
   const [isMuted, setIsMuted] = useState(true)
   const [inputValue, setInputValue] = useState('')
   const [showFirstFragment, setShowFirstFragment] = useState(false)
+  const [showSecondFragment, setShowSecondFragment] = useState(false)
   const [showError, setShowError] = useState(false)
-  const [showShardPopup, setShowShardPopup] = useState(false)
+  const [collectedShardNumber, setCollectedShardNumber] = useState<number | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const isCountdownComplete = timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0
 
   useEffect(() => {
+    let serverTimeOffset = 0
+    let lastFetchTime = 0
+    const FETCH_INTERVAL = 300000 // Fetch server time every 5 minutes
+
+    const fetchServerTime = async () => {
+      try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 5000)
+        
+        const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC', {
+          signal: controller.signal
+        })
+        clearTimeout(timeout)
+        
+        const data = await response.json()
+        const serverTime = new Date(data.datetime).getTime()
+        const localTime = new Date().getTime()
+        serverTimeOffset = serverTime - localTime
+        lastFetchTime = localTime
+      } catch (error) {
+        // Fall back to local time if server is unreachable
+        serverTimeOffset = 0
+      }
+    }
+
     const calculateTimeLeft = () => {
-      const targetDate = new Date('2026-02-24T17:30:00Z').getTime()
+      const targetDate = new Date('2026-02-21T17:30:00Z').getTime()
       const now = new Date().getTime()
-      const difference = targetDate - now
+      
+      // Check if we need to refresh server time
+      if (now - lastFetchTime > FETCH_INTERVAL) {
+        fetchServerTime()
+      }
+      
+      const adjustedNow = now + serverTimeOffset
+      const difference = targetDate - adjustedNow
 
       if (difference > 0) {
         setTimeLeft({
@@ -37,6 +71,9 @@ function App() {
       }
     }
 
+    // Fetch server time once on mount
+    fetchServerTime()
+    
     calculateTimeLeft()
     const timer = setInterval(calculateTimeLeft, 1000)
 
@@ -50,9 +87,6 @@ function App() {
 
     if (audioElement) {
       audioElement.volume = 0.3
-      audioElement.addEventListener('error', () => {
-        console.error('Audio error:', audioElement.error?.message)
-      })
     }
   }, [])
 
@@ -62,8 +96,8 @@ function App() {
       if (isMuted) {
         audioRef.current.pause()
       } else {
-        audioRef.current.play().catch((err) => {
-          console.error('Playback failed:', err)
+        audioRef.current.play().catch(() => {
+          // Silently handle playback failure
         })
       }
     }
@@ -71,21 +105,58 @@ function App() {
 
   const pad = (num: number) => String(num).padStart(2, '0')
 
-  const handleInputSubmit = (e: React.FormEvent) => {
+  const handleInputSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (inputValue == 'The First Fragment') {
-      setShowShardPopup(true)
-      setTimeout(() => {
-        setShowFirstFragment(true)
-      }, 3000)
-    } else {
+    const trimmedInput = inputValue.trim()
+    
+    if (!trimmedInput) {
+      setShowError(true)
+      return
+    }
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/validate-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: trimmedInput })
+      })
+
+      if (!response.ok) {
+        setShowError(true)
+        setInputValue('')
+        return
+      }
+
+      const data = await response.json()
+
+      if (data.valid) {
+        setCollectedShardNumber(data.shardNumber)
+        setTimeout(() => {
+          if (data.fragment === 'FirstFragment') {
+            setShowFirstFragment(true)
+          } else if (data.fragment === 'SecondFragment') {
+            setShowSecondFragment(true)
+          }
+          setCollectedShardNumber(null)
+        }, 3000)
+      } else {
+        setShowError(true)
+      }
+    } catch (error) {
+      // Server error or network issue
       setShowError(true)
     }
+
     setInputValue('')
   }
 
   if (showFirstFragment) {
     return <FirstFragment />
+  }
+
+  if (showSecondFragment) {
+    return <SecondFragment />
   }
 
   return (
@@ -138,7 +209,7 @@ function App() {
           </form>
         )}
       </div>
-      {showShardPopup && (
+      {collectedShardNumber !== null && (
         <div className="shard-popup">
           <div className="shard-popup-content">
             <div className="shard-fragment">
@@ -146,7 +217,7 @@ function App() {
               <div className="shard-inner">💎</div>
             </div>
             <h2 className="shard-title">Fragment Collected</h2>
-            <p className="shard-counter">1/6 Shards Obtained</p>
+            <p className="shard-counter">{collectedShardNumber}/6 Shards Obtained</p>
           </div>
         </div>
       )}

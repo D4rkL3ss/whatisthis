@@ -4,7 +4,6 @@
   justify-content: start;
   max-width: 1280px;
   height: 100%;
-  margin: 0 auto;
   padding: 2rem;
   text-align: center;
   width: 100%;
@@ -52,7 +51,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3rem;
   width: 100%;
   padding: 2rem 0;
 }
@@ -91,6 +89,35 @@
 
 .first-fragment-page .sound-toggle:active {
   transform: scale(0.95);
+}
+
+.first-fragment-page .image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: radial-gradient(ellipse at center, rgba(113, 90, 90, 0.2) 0%, rgba(55, 53, 62, 0.4) 100%);
+  border: 2px solid rgba(211, 218, 217, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  min-width: 300px;
+  max-width: 900px;
+}
+
+.first-fragment-page .image-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.first-fragment-page .image-label {
+  font-size: 1.2em;
+  color: rgba(211, 218, 217, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Enigmatic', sans-serif;
 }
 
 

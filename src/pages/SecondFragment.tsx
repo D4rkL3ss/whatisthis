@@ -1,12 +1,12 @@
-import './CSS/FirstFragment.css'
+import './CSS/SecondFragment.css'
 
-function FirstFragment() {
+function SecondFragment() {
   const handleGoBack = () => {
     window.location.href = '/'
   }
 
   return (
-    <div className="first-fragment-page">
+    <div className="second-fragment-page">
       <button 
         className="sound-toggle"
         onClick={handleGoBack}
@@ -19,13 +19,10 @@ function FirstFragment() {
         ← Back
       </button>
       <div className="container">
-        <h1 className="fragment-title">The First Mission</h1>
-        <div className="image-container">
-          <img src="/src/assets/firstmission.png" alt="First Mission" />
-        </div>
+        
       </div>
     </div>
   )
 }
 
-export default FirstFragment
+export default SecondFragment

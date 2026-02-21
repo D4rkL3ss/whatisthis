@@ -91,7 +91,7 @@ function App() {
   return (
     <>
       <audio id="ambient-audio" loop>
-        <source src="/sounds/ambient.mp3" type="audio/mpeg" />
+        <source src="/sounds/ambientsound.mp3" type="audio/mpeg" />
       </audio>      <button 
         className="sound-toggle"
         onClick={() => setIsMuted(!isMuted)}

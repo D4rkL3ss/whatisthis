@@ -39,6 +39,15 @@ const isRateLimited = (ip) => {
   return false;
 };
 
+// Get current UTC time from server
+app.get('/api/get-time', async (req, res) => {
+  const now = new Date();
+  res.json({ 
+    timestamp: now.getTime(),
+    iso: now.toISOString()
+  });
+});
+
 app.post('/api/validate-code', (req, res) => {
   const clientIp = req.ip;
   

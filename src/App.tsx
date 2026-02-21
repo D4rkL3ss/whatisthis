@@ -31,13 +31,16 @@ function App() {
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), 5000)
         
-        const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC', {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${apiUrl}/api/get-time`, {
           signal: controller.signal
         })
         clearTimeout(timeout)
         
+        if (!response.ok) throw new Error('Failed to fetch time')
+        
         const data = await response.json()
-        const serverTime = new Date(data.datetime).getTime()
+        const serverTime = data.timestamp
         const localTime = new Date().getTime()
         serverTimeOffset = serverTime - localTime
         lastFetchTime = localTime

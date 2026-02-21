@@ -24,7 +24,7 @@ git push
 4. Fill in the settings:
    - **Name**: `fractured-abyss` (or your preferred name)
    - **Environment**: `Node`
-   - **Build Command**: `npm run build`
+   - **Build Command**: `npm ci && npm run build`
    - **Start Command**: `npm start`
    - **Plan**: Free (or Paid if you want better performance)
 
@@ -41,7 +41,7 @@ VITE_API_URL=/api
 
 Click **"Create Web Service"** and Render will:
 1. Clone your repo
-2. Run `npm install` (automatic)
+2. Run `npm ci` (installs exact versions from package-lock.json)
 3. Run `npm run build`
 4. Start the server with `npm start`
 5. Give you a URL like `https://fractured-abyss.onrender.com`

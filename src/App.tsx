@@ -55,7 +55,7 @@ function App() {
     }
 
     const calculateTimeLeft = () => {
-      const targetDate = new Date('2026-02-21T17:30:00Z').getTime()
+      const targetDate = new Date('2026-02-24T17:30:00Z').getTime()
       const now = new Date().getTime()
       
       // Check if we need to refresh server time

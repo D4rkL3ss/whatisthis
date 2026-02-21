@@ -31,8 +31,11 @@ function App() {
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), 5000)
         
-        const apiUrl = import.meta.env.VITE_API_URL
-        const endpoint = apiUrl ? `${apiUrl}/api/get-time` : '/api/get-time'
+        // On localhost, use absolute URL to backend. On Render, use relative path.
+        const endpoint = window.location.hostname === 'localhost' 
+          ? 'http://localhost:3001/api/get-time'
+          : '/api/get-time'
+        
         const response = await fetch(endpoint, {
           signal: controller.signal
         })
@@ -119,8 +122,11 @@ function App() {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL
-      const endpoint = apiUrl ? `${apiUrl}/api/validate-code` : '/api/validate-code'
+      // On localhost, use absolute URL to backend. On Render, use relative path.
+      const endpoint = window.location.hostname === 'localhost'
+        ? 'http://localhost:3001/api/validate-code'
+        : '/api/validate-code'
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

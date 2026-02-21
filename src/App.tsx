@@ -31,8 +31,9 @@ function App() {
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), 5000)
         
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-        const response = await fetch(`${apiUrl}/api/get-time`, {
+        const apiUrl = import.meta.env.VITE_API_URL
+        const endpoint = apiUrl ? `${apiUrl}/api/get-time` : '/api/get-time'
+        const response = await fetch(endpoint, {
           signal: controller.signal
         })
         clearTimeout(timeout)
@@ -118,8 +119,9 @@ function App() {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${apiUrl}/api/validate-code`, {
+      const apiUrl = import.meta.env.VITE_API_URL
+      const endpoint = apiUrl ? `${apiUrl}/api/validate-code` : '/api/validate-code'
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: trimmedInput })

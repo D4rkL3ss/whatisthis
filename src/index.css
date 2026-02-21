@@ -1,44 +1,36 @@
 @import './styles/fonts.css';
 
+html {
+  background: 
+    radial-gradient(ellipse 500px 300px at 15% 20%, rgba(120,120,120,0.4) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 250px at 75% 15%, rgba(100,100,100,0.3) 0%, transparent 70%),
+    radial-gradient(ellipse 450px 280px at 50% 70%, rgba(110,110,110,0.35) 0%, transparent 70%),
+    radial-gradient(ellipse 380px 240px at 85% 60%, rgba(105,105,105,0.3) 0%, transparent 70%),
+    radial-gradient(ellipse 420px 260px at 20% 80%, rgba(115,115,115,0.35) 0%, transparent 70%),
+    radial-gradient(ellipse 480px 290px at 35% 35%, rgba(108,108,108,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 380px 220px at 65% 45%, rgba(115,115,115,0.28) 0%, transparent 70%),
+    radial-gradient(ellipse 420px 270px at 25% 55%, rgba(100,100,100,0.32) 0%, transparent 70%),
+    radial-gradient(ellipse 460px 310px at 70% 75%, rgba(110,110,110,0.3) 0%, transparent 70%),
+    radial-gradient(ellipse 390px 240px at 45% 25%, rgba(118,118,118,0.27) 0%, transparent 70%),
+    linear-gradient(180deg, #000 0%, #0a0a0a 50%, #000 100%);
+  background-size: 200% 200%;
+  background-position: var(--bg-x, 0%) var(--bg-y, 0%);
+  transition: background-position 10s ease-in-out;
+  height: 100%;
+  width: 100%;
+}
+
 :root {
   font-family: 'Enigmatic', sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  min-height: 100vh;
-  
-  /* Fixed gradient - no size parameter */
-  background: 
-    radial-gradient(circle at 60% 70%, rgba(9,9,9,0.91) 0%, transparent 68%),
-    linear-gradient(45deg, #000 0%, #0f0f0f 50%, #000 100%);
-  
-  /* CRITICAL: Add these for animation */
-  background-size: 125% 115%;
-  background-position: 60% 70%, 0% 0%;
-  
-  /* Now animation WORKS */
-  animation: smoothDrift 35s ease-in-out infinite;
   
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@keyframes smoothDrift {
-  0%, 100% { 
-    background-position: 60% 70%, 0% 0%; 
-  }
-  25% { 
-    background-position: 40% 40%, 100% 100%; 
-  }
-  50% { 
-    background-position: 80% 90%, 50% 50%; 
-  }
-  75% { 
-    background-position: 30% 60%, 0% 100%; 
-  }
 }
 
 a {

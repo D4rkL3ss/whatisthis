@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import './styles/fonts.css';
 import './App.css'
 
 function App() {
@@ -11,7 +12,7 @@ function App() {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const targetDate = new Date('???').getTime()
+      const targetDate = new Date('2026-02-22T15:15:00Z').getTime()
       const now = new Date().getTime()
       const difference = targetDate - now
 
@@ -37,10 +38,14 @@ function App() {
 
   return (
     <>
+      <div className="header">
+        <div className='title-container'>
+           <img src="/vite.svg" className="logo" /><h1>Echo of the Void</h1>
+        </div>
+      </div>
       <div className="container">
-        <a>
-          <h1>It's Coming...</h1>
-        </a>
+        <div>
+          </div>
         {timeLeft.days > 0 && <div className="countdown-wrapper">
           <div className="countdown-card">
             <div className="countdown-number">{pad(timeLeft.days)}</div>

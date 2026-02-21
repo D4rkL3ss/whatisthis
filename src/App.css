@@ -1,8 +1,8 @@
+
 #root {
-  display: flex;
-  flex-direction: column;
   justify-content: start;
   max-width: 1280px;
+  height: 100%;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -12,14 +12,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7rem;
+  gap: 10rem;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+h1 {
+  font-size: 8em;
+  line-height: 1.1;
+  color: #f9f9f9;
+  font-family: 'YellowPumpkin', sans-serif;
 }
 
 .logo {
-  height: 120rem;
+  height: 10rem;
   padding: 1rem;
   will-change: filter;
   transition: filter 300ms;
+  background-color: white;
+  border-radius: 60px;
 }
 
 .logo.react:hover {

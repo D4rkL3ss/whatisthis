@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'YellowPumpkin';
+  src: url('/fonts/YellowPumpkin.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Enigmatic';
+  src: url('/fonts/Enigma__2.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}

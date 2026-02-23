@@ -26,6 +26,9 @@ function FourthFragment({ onGoBack }: { onGoBack: () => void }) {
         <p className="coming-soon-text">This fragment has not yet surfaced from the depths.</p>
         <div className="coming-soon-divider"></div>
         <p className="coming-soon-subtext">Something is forming in the void. Return when the shadows call.</p>
+        <button className="coming-soon-hint" onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSfQ0DJtSXJoDN2ABTbLk2kKg3QH4w4uyCDeNtzkw0PgM7dowg/viewform?usp=publish-editor', '_blank')}>
+          Get your reward here
+        </button>
         <div className="coming-soon-pulse"></div>
       </div>
     </div>

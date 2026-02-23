@@ -11,6 +11,33 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(cors());
 app.use(express.json());
 
+// ── Active Users (SSE) ──
+let activeClients = new Set();
+
+function broadcastActiveUsers() {
+  const count = activeClients.size;
+  for (const res of activeClients) {
+    res.write(`data: ${JSON.stringify({ count })}\n\n`);
+  }
+}
+
+app.get('/api/active-users', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+  res.write('\n');
+
+  activeClients.add(res);
+  broadcastActiveUsers();
+
+  req.on('close', () => {
+    activeClients.delete(res);
+    broadcastActiveUsers();
+  });
+});
+
 // Serve static files from the Vite dist folder
 app.use(express.static(path.join(__dirname, 'dist')));
 

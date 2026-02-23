@@ -146,6 +146,34 @@ h1 {
   letter-spacing: 1px;
 }
 
+.active-users-counter {
+  position: fixed;
+  top: 1.5rem;
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 0.5rem 1.25rem;
+  background: rgba(113, 90, 90, 0.3);
+  border: 2px solid rgba(211, 218, 217, 0.4);
+  border-radius: 8px;
+  color: rgba(211, 218, 217, 0.9);
+  font-family: 'Enigmatic', sans-serif;
+  font-size: 0.85em;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  letter-spacing: 1px;
+  z-index: 1000;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: fadeInCounter 0.5s ease;
+}
+
+@keyframes fadeInCounter {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .code-input-form {
   display: flex;
   flex-direction: column;

@@ -100,6 +100,8 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(() => !sessionStorage.getItem('welcomeSeen'))
   const [revealStage, setRevealStage] = useState(() => sessionStorage.getItem('welcomeSeen') ? 3 : 0)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [activeUsers, setActiveUsers] = useState<number | null>(null)
+  const [showCounter, setShowCounter] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const keySequenceRef = useRef<string>('')
 
@@ -124,6 +126,25 @@ function App() {
   // Initialize counter from localStorage on mount
   useEffect(() => {
     setUnlockedCount(getUnlockedFragments().length)
+  }, [])
+
+  // SSE: subscribe to active-users stream
+  useEffect(() => {
+    const endpoint = window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api/active-users'
+      : '/api/active-users'
+
+    const es = new EventSource(endpoint)
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        setActiveUsers(data.count)
+      } catch { /* ignore parse errors */ }
+    }
+    es.onerror = () => {
+      setActiveUsers(null)
+    }
+    return () => es.close()
   }, [])
 
 
@@ -208,6 +229,12 @@ function App() {
       // Keep only the last 10 characters to match against
       if (keySequenceRef.current.length > 10) {
         keySequenceRef.current = keySequenceRef.current.slice(-10)
+      }
+
+      // Check if the sequence matches "counter" — toggle active users counter
+      if (keySequenceRef.current.endsWith('counter')) {
+        setShowCounter(prev => !prev)
+        keySequenceRef.current = ''
       }
 
       // Check if the sequence matches "reset" — show reset confirmation
@@ -384,13 +411,19 @@ function App() {
       <div className={`fragment-counter reveal-element ${revealStage >= 3 ? 'revealed' : ''}`}>
         {unlockedCount}/??? Fragments
       </div>
+      {showCounter && activeUsers !== null && (
+        <div className={`active-users-counter reveal-element ${revealStage >= 3 ? 'revealed' : ''}`}>
+          👁️ {activeUsers} {activeUsers === 1 ? 'soul' : 'souls'} watching
+        </div>
+      )}
       <button 
         className={`sound-toggle reveal-element ${revealStage >= 3 ? 'revealed' : ''}`}
         onClick={() => { playClick(); setIsMuted(!isMuted) }}
         aria-label="Toggle ambient sound"
       >
         {isMuted ? '🔊 Enable Sound' : '🔇 Mute Sound'}
-      </button>      <div className={`header reveal-element ${revealStage >= 1 ? 'revealed' : ''}`}>
+      </button>
+      <div className={`header reveal-element ${revealStage >= 1 ? 'revealed' : ''}`}>
         <div className='title-container'>
            <img src="/vite.svg" className="logo" /><h1>The Fractured Abyss</h1>
         </div>

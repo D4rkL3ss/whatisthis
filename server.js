@@ -39,7 +39,23 @@ app.get('/api/active-users', (req, res) => {
 });
 
 // Serve static files from the Vite dist folder
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, 'dist'), {
+  setHeaders: (res, filePath) => {
+    // Block access to .map files just in case
+    if (filePath.endsWith('.map')) {
+      res.status(403).end();
+    }
+  }
+}));
+
+// Security headers for all responses
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Store codes securely (in production, use a database)
 const validCodes = {

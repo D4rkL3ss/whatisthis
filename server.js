@@ -433,11 +433,20 @@ app.post('/api/fragment-reward', (req, res) => {
 });
 
 // Image schedule for ThirdFragment (server-side only)
+// Images cycle every 2 hours across the full 24-hour day
 const IMAGE_SCHEDULE = [
-  { time: [15, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
-  { time: [17, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
-  { time: [19, 30], file: 'HappyFamily_pt2.png', label: 'Part 2' },
-  { time: [21, 30], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [0, 0],  file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [2, 0],  file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [4, 0],  file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [6, 0],  file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [8, 0],  file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [10, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [12, 0], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [14, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [16, 0], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [18, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [20, 0], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [22, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
 ];
 
 app.post('/api/fragment-image', (req, res) => {
@@ -457,7 +466,7 @@ app.post('/api/fragment-image', (req, res) => {
 
   for (const entry of IMAGE_SCHEDULE) {
     const entryMinutes = entry.time[0] * 60 + entry.time[1];
-    if (currentMinutes >= entryMinutes && currentMinutes <= entryMinutes + 5) {
+    if (currentMinutes >= entryMinutes && currentMinutes < entryMinutes + 10) {
       activeFile = entry.file;
       activeLabel = entry.label;
     }

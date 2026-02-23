@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -69,6 +70,7 @@ const validCodes = {
 // Token store: token -> { fragment, createdAt }
 const tokenStore = new Map();
 const TOKEN_TTL = 60 * 60 * 1000; // 1 hour
+const UNLOCK_SECRET = process.env.UNLOCK_SECRET || crypto.randomBytes(64).toString('hex');
 
 function generateToken(fragment) {
   const token = crypto.randomBytes(32).toString('hex');
@@ -84,6 +86,28 @@ function verifyToken(token, fragment) {
     return false;
   }
   return entry.fragment === fragment;
+}
+
+// Create an HMAC-signed unlock proof for a fragment
+function createUnlockProof(fragment) {
+  const timestamp = Date.now().toString();
+  const hmac = crypto.createHmac('sha256', UNLOCK_SECRET)
+    .update(fragment + ':' + timestamp)
+    .digest('hex');
+  return fragment + ':' + timestamp + ':' + hmac;
+}
+
+// Verify an unlock proof is authentic
+function verifyUnlockProof(proof, expectedFragment) {
+  if (!proof || typeof proof !== 'string') return false;
+  const parts = proof.split(':');
+  if (parts.length !== 3) return false;
+  const [fragment, timestamp, hmac] = parts;
+  if (fragment !== expectedFragment) return false;
+  const expectedHmac = crypto.createHmac('sha256', UNLOCK_SECRET)
+    .update(fragment + ':' + timestamp)
+    .digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(hmac, 'hex'), Buffer.from(expectedHmac, 'hex'));
 }
 
 // Cleanup expired tokens every 10 minutes
@@ -148,11 +172,13 @@ app.post('/api/validate-code', (req, res) => {
 
   if (codeData) {
     const token = generateToken(codeData.fragmentComponent);
+    const unlockProof = createUnlockProof(codeData.fragmentComponent);
     return res.json({ 
       valid: true, 
       shardNumber: codeData.shardNumber,
       fragment: codeData.fragmentComponent,
-      token
+      token,
+      unlockProof
     });
   }
 
@@ -177,7 +203,7 @@ app.post('/api/verify-token', (req, res) => {
 
 // Issue a fresh token for an already-unlocked fragment (checkpoint navigation)
 app.post('/api/reissue-token', (req, res) => {
-  const { fragment } = req.body;
+  const { fragment, unlockProof } = req.body;
 
   if (!fragment || typeof fragment !== 'string') {
     return res.status(400).json({ valid: false });
@@ -186,6 +212,11 @@ app.post('/api/reissue-token', (req, res) => {
   // Only issue tokens for known fragment names
   const knownFragments = Object.values(validCodes).map(c => c.fragmentComponent);
   if (!knownFragments.includes(fragment)) {
+    return res.json({ valid: false });
+  }
+
+  // Verify the unlock proof is authentic
+  if (!verifyUnlockProof(unlockProof, fragment)) {
     return res.json({ valid: false });
   }
 

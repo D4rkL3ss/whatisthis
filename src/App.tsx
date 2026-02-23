@@ -109,18 +109,46 @@ function App() {
   // Load previously unlocked fragments from localStorage
   const getUnlockedFragments = (): string[] => {
     try {
-      return JSON.parse(localStorage.getItem('unlockedFragments') || '[]')
+      const stored = JSON.parse(localStorage.getItem('unlockedFragments') || '[]')
+      // Support new format: array of { fragment, proof } objects
+      if (stored.length > 0 && typeof stored[0] === 'object') {
+        return stored.map((entry: { fragment: string }) => entry.fragment)
+      }
+      // Legacy plain string array — treat as invalid (no proofs)
+      return []
     } catch {
       return []
     }
   }
 
-  const saveUnlockedFragment = (fragment: string) => {
-    const unlocked = getUnlockedFragments()
-    if (!unlocked.includes(fragment)) {
-      const updated = [...unlocked, fragment]
-      localStorage.setItem('unlockedFragments', JSON.stringify(updated))
-      setUnlockedCount(updated.length)
+  const getUnlockProof = (fragment: string): string | null => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('unlockedFragments') || '[]')
+      if (stored.length > 0 && typeof stored[0] === 'object') {
+        const entry = stored.find((e: { fragment: string; proof: string }) => e.fragment === fragment)
+        return entry?.proof || null
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  const saveUnlockedFragment = (fragment: string, proof: string) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('unlockedFragments') || '[]')
+      // Ensure new format
+      const entries: { fragment: string; proof: string }[] =
+        stored.length > 0 && typeof stored[0] === 'object' ? stored : []
+      if (!entries.some(e => e.fragment === fragment)) {
+        entries.push({ fragment, proof })
+        localStorage.setItem('unlockedFragments', JSON.stringify(entries))
+        setUnlockedCount(entries.length)
+      }
+    } catch {
+      const entries = [{ fragment, proof }]
+      localStorage.setItem('unlockedFragments', JSON.stringify(entries))
+      setUnlockedCount(1)
     }
   }
 
@@ -327,7 +355,7 @@ function App() {
         } else {
           // First time — show shard popup then navigate
           setCollectedShardNumber(data.shardNumber)
-          saveUnlockedFragment(data.fragment)
+          saveUnlockedFragment(data.fragment, data.unlockProof)
           setTimeout(() => {
             if (data.fragment === 'FirstFragment') setShowFirstFragment(true)
             else if (data.fragment === 'SecondFragment') setShowSecondFragment(true)
@@ -348,6 +376,9 @@ function App() {
   }
 
   const navigateToFragment = async (fragment: string) => {
+    const unlockProof = getUnlockProof(fragment)
+    if (!unlockProof) return
+
     try {
       const endpoint = window.location.hostname === 'localhost'
         ? 'http://localhost:3001/api/reissue-token'
@@ -356,7 +387,7 @@ function App() {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fragment })
+        body: JSON.stringify({ fragment, unlockProof })
       })
       const data = await response.json()
       if (!data.valid) return

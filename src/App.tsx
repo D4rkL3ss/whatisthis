@@ -336,7 +336,7 @@ function App() {
     return (
       <>
         <audio id="ambient-audio" ref={audioRef} loop>
-          <source src="/sounds/ambientsound.mp3" type="audio/mpeg" />
+          <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
         <FirstFragment onGoBack={goBack} />
       </>
@@ -347,7 +347,7 @@ function App() {
     return (
       <>
         <audio id="ambient-audio" ref={audioRef} loop>
-          <source src="/sounds/ambientsound.mp3" type="audio/mpeg" />
+          <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
         <SecondFragment onGoBack={goBack} />
       </>
@@ -358,7 +358,7 @@ function App() {
     return (
       <>
         <audio id="ambient-audio" ref={audioRef} loop>
-          <source src="/sounds/ambientsound.mp3" type="audio/mpeg" />
+          <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
         <ThirdFragment onGoBack={goBack} />
       </>
@@ -369,7 +369,7 @@ function App() {
     return (
       <>
         <audio id="ambient-audio" ref={audioRef} loop>
-          <source src="/sounds/ambientsound.mp3" type="audio/mpeg" />
+          <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
         <FourthFragment onGoBack={goBack} />
       </>
@@ -379,7 +379,7 @@ function App() {
   return (
     <>
       <audio id="ambient-audio" ref={audioRef} loop>
-        <source src="/sounds/ambientsound.mp3" type="audio/mpeg" />
+        <source src="/sounds/ambient.mp3" type="audio/mpeg" />
       </audio>
       <div className={`fragment-counter reveal-element ${revealStage >= 3 ? 'revealed' : ''}`}>
         {unlockedCount}/??? Fragments
@@ -496,7 +496,7 @@ function App() {
           className="corner-dropdown__trigger"
           onClick={() => { playClick(); setShowCheckpointsDropdown(p => !p); setShowArchivesDropdown(false) }}
         >
-          🕳️ Abyss ({getUnlockedFragments().length}/???)
+          🕳️ Abyss ({getUnlockedFragments().length}/4)
         </button>
         {showCheckpointsDropdown && (
           <div className="corner-dropdown__panel corner-dropdown__panel--right">

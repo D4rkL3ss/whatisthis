@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './CSS/ThirdFragment.css'
 import { playClick } from '../utils/playClick'
+import { useTokenVerification } from '../utils/useTokenVerification'
 import happyfamilyPT1 from '../assets/HappyFamily_pt1.png'
 import happyfamilyPT2 from '../assets/HappyFamily_pt2.png'
 import happyfamilyPT3 from '../assets/HappyFamily_pt3.png'
@@ -32,7 +33,8 @@ function getActiveImage() {
   return { activeImage, activeLabel }
 }
 
-function ThirdFragment({ onGoBack }: { onGoBack: () => void }) {
+function ThirdFragment({ onGoBack, token }: { onGoBack: () => void; token: string | null }) {
+  const status = useTokenVerification(token, 'ThirdFragment')
   const [currentImage, setCurrentImage] = useState<string | null>(null)
 
   const handleGoBack = () => {
@@ -49,6 +51,22 @@ function ThirdFragment({ onGoBack }: { onGoBack: () => void }) {
     const interval = setInterval(update, 60000)
     return () => clearInterval(interval)
   }, [])
+
+  if (status === 'loading') {
+    return <div className="third-fragment-page"><div className="container"><p style={{ color: '#aaa', fontSize: '1.2rem' }}>Verifying access...</p></div></div>
+  }
+
+  if (status === 'denied') {
+    return (
+      <div className="third-fragment-page">
+        <div className="container">
+          <h1 style={{ color: '#c0392b', fontFamily: 'Enigmatic, serif' }}>Access Denied</h1>
+          <p style={{ color: '#aaa', fontSize: '1rem' }}>The Abyss rejects your presence.</p>
+          <button className="sound-toggle" onClick={() => { playClick(); handleGoBack() }} style={{ position: 'static', marginTop: '2rem' }}>← Back</button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="third-fragment-page">

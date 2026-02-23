@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const app = express();
@@ -65,6 +66,34 @@ const validCodes = {
   "SHADOWS FROM THE PAST": { shardNumber: 4, fragmentComponent: 'FourthFragment' }
 };
 
+// Token store: token -> { fragment, createdAt }
+const tokenStore = new Map();
+const TOKEN_TTL = 60 * 60 * 1000; // 1 hour
+
+function generateToken(fragment) {
+  const token = crypto.randomBytes(32).toString('hex');
+  tokenStore.set(token, { fragment, createdAt: Date.now() });
+  return token;
+}
+
+function verifyToken(token, fragment) {
+  const entry = tokenStore.get(token);
+  if (!entry) return false;
+  if (Date.now() - entry.createdAt > TOKEN_TTL) {
+    tokenStore.delete(token);
+    return false;
+  }
+  return entry.fragment === fragment;
+}
+
+// Cleanup expired tokens every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, entry] of tokenStore) {
+    if (now - entry.createdAt > TOKEN_TTL) tokenStore.delete(token);
+  }
+}, 10 * 60 * 1000);
+
 // Rate limiting - simple implementation
 const rateLimitMap = new Map();
 
@@ -118,15 +147,50 @@ app.post('/api/validate-code', (req, res) => {
   const codeData = validCodes[trimmedCode];
 
   if (codeData) {
+    const token = generateToken(codeData.fragmentComponent);
     return res.json({ 
       valid: true, 
       shardNumber: codeData.shardNumber,
-      fragment: codeData.fragmentComponent
+      fragment: codeData.fragmentComponent,
+      token
     });
   }
 
   // Don't reveal which code is correct (security)
   res.json({ valid: false });
+});
+
+// Verify a token for a specific fragment
+app.post('/api/verify-token', (req, res) => {
+  const { token, fragment } = req.body;
+
+  if (!token || !fragment || typeof token !== 'string' || typeof fragment !== 'string') {
+    return res.status(400).json({ valid: false });
+  }
+
+  if (verifyToken(token, fragment)) {
+    return res.json({ valid: true });
+  }
+
+  res.json({ valid: false });
+});
+
+// Issue a fresh token for an already-unlocked fragment (checkpoint navigation)
+app.post('/api/reissue-token', (req, res) => {
+  const { fragment } = req.body;
+
+  if (!fragment || typeof fragment !== 'string') {
+    return res.status(400).json({ valid: false });
+  }
+
+  // Only issue tokens for known fragment names
+  const knownFragments = Object.values(validCodes).map(c => c.fragmentComponent);
+  if (!knownFragments.includes(fragment)) {
+    return res.json({ valid: false });
+  }
+
+  const token = generateToken(fragment);
+  return res.json({ valid: true, token });
 });
 
 // Serve index.html for all other routes (SPA fallback)

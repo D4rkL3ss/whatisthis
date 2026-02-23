@@ -1,11 +1,29 @@
 import './CSS/FirstFragment.css'
 import firstMissionImg from '../assets/firstmission.png'
 import { playClick } from '../utils/playClick'
+import { useTokenVerification } from '../utils/useTokenVerification'
 
-function FirstFragment({ onGoBack }: { onGoBack: () => void }) {
+function FirstFragment({ onGoBack, token }: { onGoBack: () => void; token: string | null }) {
+  const status = useTokenVerification(token, 'FirstFragment')
   const handleGoBack = () => {
     playClick()
     onGoBack()
+  }
+
+  if (status === 'loading') {
+    return <div className="first-fragment-page"><div className="container"><p style={{ color: '#aaa', fontSize: '1.2rem' }}>Verifying access...</p></div></div>
+  }
+
+  if (status === 'denied') {
+    return (
+      <div className="first-fragment-page">
+        <div className="container">
+          <h1 style={{ color: '#c0392b', fontFamily: 'Enigmatic, serif' }}>Access Denied</h1>
+          <p style={{ color: '#aaa', fontSize: '1rem' }}>The Abyss rejects your presence.</p>
+          <button className="sound-toggle" onClick={handleGoBack} style={{ position: 'static', marginTop: '2rem' }}>← Back</button>
+        </div>
+      </div>
+    )
   }
 
   return (

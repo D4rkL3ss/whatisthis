@@ -102,6 +102,7 @@ function App() {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [activeUsers, setActiveUsers] = useState<number | null>(null)
   const [showCounter, setShowCounter] = useState(false)
+  const [fragmentToken, setFragmentToken] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const keySequenceRef = useRef<string>('')
 
@@ -315,6 +316,7 @@ function App() {
 
       if (data.valid) {
         const alreadyUnlocked = getUnlockedFragments().includes(data.fragment)
+        setFragmentToken(data.token)
 
         if (alreadyUnlocked) {
           // Skip popup, go directly to fragment
@@ -345,7 +347,24 @@ function App() {
     setInputValue('')
   }
 
-  const navigateToFragment = (fragment: string) => {
+  const navigateToFragment = async (fragment: string) => {
+    try {
+      const endpoint = window.location.hostname === 'localhost'
+        ? 'http://localhost:3001/api/reissue-token'
+        : '/api/reissue-token'
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fragment })
+      })
+      const data = await response.json()
+      if (!data.valid) return
+      setFragmentToken(data.token)
+    } catch {
+      return
+    }
+
     if (fragment === 'FirstFragment') setShowFirstFragment(true)
     else if (fragment === 'SecondFragment') setShowSecondFragment(true)
     else if (fragment === 'ThirdFragment') setShowThirdFragment(true)
@@ -357,6 +376,7 @@ function App() {
     setShowSecondFragment(false)
     setShowThirdFragment(false)
     setShowFourthFragment(false)
+    setFragmentToken(null)
   }
 
   if (showFirstFragment) {
@@ -365,7 +385,7 @@ function App() {
         <audio id="ambient-audio" ref={audioRef} loop>
           <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
-        <FirstFragment onGoBack={goBack} />
+        <FirstFragment onGoBack={goBack} token={fragmentToken} />
       </>
     )
   }
@@ -376,7 +396,7 @@ function App() {
         <audio id="ambient-audio" ref={audioRef} loop>
           <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
-        <SecondFragment onGoBack={goBack} />
+        <SecondFragment onGoBack={goBack} token={fragmentToken} />
       </>
     )
   }
@@ -387,7 +407,7 @@ function App() {
         <audio id="ambient-audio" ref={audioRef} loop>
           <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
-        <ThirdFragment onGoBack={goBack} />
+        <ThirdFragment onGoBack={goBack} token={fragmentToken} />
       </>
     )
   }
@@ -398,7 +418,7 @@ function App() {
         <audio id="ambient-audio" ref={audioRef} loop>
           <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
-        <FourthFragment onGoBack={goBack} />
+        <FourthFragment onGoBack={goBack} token={fragmentToken} />
       </>
     )
   }

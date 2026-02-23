@@ -1,13 +1,33 @@
+import { useState, useEffect } from 'react'
 import './CSS/ForthFragment.css'
 import { playClick } from '../utils/playClick'
 import { useTokenVerification } from '../utils/useTokenVerification'
 
 function FourthFragment({ onGoBack, token }: { onGoBack: () => void; token: string | null }) {
   const status = useTokenVerification(token, 'FourthFragment')
+  const [rewardUrl, setRewardUrl] = useState<string | null>(null)
+
   const handleGoBack = () => {
     playClick()
     onGoBack()
   }
+
+  useEffect(() => {
+    if (status !== 'verified' || !token) return
+
+    const endpoint = window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api/fragment-reward'
+      : '/api/fragment-reward'
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, fragment: 'FourthFragment' })
+    })
+      .then(res => res.json())
+      .then(data => { if (data.url) setRewardUrl(data.url) })
+      .catch(() => {})
+  }, [status, token])
 
   if (status === 'loading') {
     return <div className="fourth-fragment-page"><div className="container"><p style={{ color: '#aaa', fontSize: '1.2rem' }}>Verifying access...</p></div></div>
@@ -44,9 +64,11 @@ function FourthFragment({ onGoBack, token }: { onGoBack: () => void; token: stri
         <p className="coming-soon-text">This fragment has not yet surfaced from the depths.</p>
         <div className="coming-soon-divider"></div>
         <p className="coming-soon-subtext">Something is forming in the void. Return when the shadows call.</p>
-        <button className="coming-soon-hint" onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSfQ0DJtSXJoDN2ABTbLk2kKg3QH4w4uyCDeNtzkw0PgM7dowg/viewform?usp=publish-editor', '_blank')}>
-          Get your reward here
-        </button>
+        {rewardUrl && (
+          <button className="coming-soon-hint" onClick={() => window.open(rewardUrl, '_blank')}>
+            Get your reward here
+          </button>
+        )}
         <div className="coming-soon-pulse"></div>
       </div>
     </div>

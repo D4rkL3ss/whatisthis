@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { playClick, playPageFlip } from './utils/playClick'
 import './styles/fonts.css';
 import './App.css'
@@ -7,67 +7,11 @@ import SecondFragment from './pages/SecondFragment'
 import ThirdFragment from './pages/ThirdFragment';
 import FourthFragment from './pages/ForthFragment'
 
-const ARCHIVES = [
-  { id: 1, title: 'The First Mission', content: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-AUDIO CALL LOG — CASE #0041
-DATE: ██/██/████  |  TIME: 17:05
-DURATION: 00:04:12
-PARTICIPANTS: Detective Mark, Unknown
-STATUS: CONNECTION LOST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-[17:05] DETECTIVE MARK: Did you find it yet?
-
-[17:06] UNKNOWN: I don't think we should dig any deeper...
-
-[17:06] DETECTIVE MARK: That's not what I asked, I need to know if you found it or not!
-
-[17:06] DETECTIVE MARK: My reputation is on the line here! I NEED you to proceed with this investigation!
-
-[17:06] UNKNOWN: Woah! Don't start with that again! My life is seriously in danger and you're still complaining! 
-
-[17:06] DETECTIVE MARK: Fine! Have it your way, but don't forget I'm not doing this for me, I'm doing this for my daughter.
-
-[17:06] UNKNOWN: *sighs* Sure. I know the details... 
-
-[17:06] UNKNOWN: I'll try to get you the documents of the incident jus-
-
-[17:07] UNKNOWN: Wait, what is that? 
-
-[17:07] DETECTIVE MARK: What are you talking about?
-
-[17:07] UNKNOWN: I don't know, there's just a pair of green eyes looking at me...
-
-[17:07] DETECTIVE MARK: Green eyes?
-
-[17:07] UNKNOWN: What the fuck is that!!?
-
-[17:08] DETECTIVE MARK: Doc? What's happening?
-
-[17:08] UNKNOWN: [UNRECOGNIZABLE NOISES]
-
-[17:09] DETECTIVE MARK: DOC!?
-
-[17:09] ▓▓ SIGNAL LOST — CALL TERMINATED ▓▓
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-END OF LOG`, type: 'call' as const },
-  { id: 2, title: "The Creature of the Abyss", content: `Legends whisper of a being that dwells in the most forsaken depths of existence, a place known only as the Abyss. There, shrouded in eternal darkness, it feeds upon the anguish and dread that seep from the world above, growing ever stronger with each trembling heartbeat of mortal despair. Yet, among the countless souls it tormented, there was one who stirred something unfamiliar within the creature, a fragile thread of fascination, perhaps even attachment. Between the realms of shadow and flesh, an unholy bond was born. But affection from such a being is perilous, when the human child defied the path of virtue, the creature’s silent watch turned to wrath. The next dawn arrived heavy with unease, for the child was gone, vanished as though erased from reality itself. To this day, parents recount the tale in hushed tones to bind their children’s hearts with fear and obedience. Yet some believe the story conceals an older truth, one that lingers still, waiting in the dark beneath our world.`, type: 'document' as const },
-  { id: 3, title: 'Echoes of the Shattered', content: `The Braddocks were once a family of stature, refined, respected, and envied. Their manor sat upon the hill like a crown of stone, overseeing the town below. Yet beneath their polished image festered deceit. The youngest of the household, a pale and quiet child, carried the mark of a secret, born from infidelity and despised for it. Within those lavish walls, her laughter withered under whispers, her innocence bruised by those sworn to protect her. It was said that the Braddock’s patriarch discovered an archaic manuscript, one recounting the legend of the creature from the Abyss, the devourer of despair. He regarded it as myth, even jested upon it during his fits of drink. But the child, whose tears had become ritual, drew the creature’s sympathy. Their kindred agony entwined them, two spirits bound by suffering, one mortal, one eternal. Then came the night of silence. No servant stirred, no light gleamed from the manor’s towering windows. When neighbors finally dared to cross the threshold, they found only the echo of emptiness, every Braddock gone, along with the child, and any trace of what transpired. Furniture stood untouched, the fire in the hearth cold but recently fed, a dinner table set for six, untouched. The police descended upon the estate with vigor. They scoured every room, every field and lake, and brought dogs to trace scent or sound. Yet every lead dissolved into nothing, no footprints on the soil, no bodies, no signs of struggle, not even a draft where doors had once been opened. Reports were filed, witnesses interviewed, theories spun like cobwebs in the dark, but none could capture what had truly occurred. In the end, the case was sealed, labeled unsolved. Still, on windless nights, the old inspectors swore they could see lanterns glimmering near the ruin and hear faint laughter carried from deep below, where light cannot reach.`, type: 'document' as const },
-  { id: 4, title: 'The Detective\'s Journal', content: `Excerpt from Detective Mark’s Personal Journal
-June 17th, 1997
-
-Three months have passed since the Braddock case was declared cold. Officially, I am no longer attached to the investigation, but how does one sever ties with their own damnation? They still call it an unsolved disappearance, a tidy phrase for something far uglier, a secret that festers behind every word of that report.
-
-I return to the manor more often than I admit, always after dark. The air there feels wrong, sometimes heavy, listening. The constables mock my persistence, but they don’t understand. They never met her. The child. My child.
-
-No one knows the truth of her blood, not even the department. She bore the Braddock name, but the shame she carried was mine alone. I told myself my distance was protection, that my silence would keep her safe. Yet every bruise, every scream that went unheard... I heard them all, if only too late.
-
-The legends I once dismissed now feel closer than reason. The mediums I consulted spoke of eyes within the dark, whispering her name, promising deliverance through vengeance. I had called them mad, and perhaps they are, but if madness is where she dwells, perhaps I, too, must step into it.
-
-Last night, I dreamed of her standing at the edge of a bottomless chasm, pale and still. A shape lingered behind her, vast and formless, its presence almost tender. She looked back once and smiled, not at me, but at the thing beside her. Then they both descended, and the darkness closed like water over them.
-
-I fear the creature has not taken her from me… but to me. The sin that birthed her has come full circle, and in the silence of these nights, I begin to wonder if what vanished in that house was not the Braddocks, nor even the child, but my last fragment of salvation.`, type: 'document' as const },
+const ARCHIVES_META = [
+  { id: 1, title: 'The First Mission', type: 'call' as const },
+  { id: 2, title: 'The Creature of the Abyss', type: 'document' as const },
+  { id: 3, title: 'Echoes of the Shattered', type: 'document' as const },
+  { id: 4, title: 'The Detective\'s Journal', type: 'document' as const },
 ]
 
 const FRAGMENT_LABELS: Record<string, string> = {
@@ -96,7 +40,7 @@ function App() {
   const [unlockedCount, setUnlockedCount] = useState<number>(0)
   const [showArchivesDropdown, setShowArchivesDropdown] = useState(false)
   const [showCheckpointsDropdown, setShowCheckpointsDropdown] = useState(false)
-  const [selectedArchive, setSelectedArchive] = useState<typeof ARCHIVES[0] | null>(null)
+  const [selectedArchive, setSelectedArchive] = useState<{ id: number; title: string; type: 'call' | 'document'; content: string } | null>(null)
   const [showWelcome, setShowWelcome] = useState(() => !sessionStorage.getItem('welcomeSeen'))
   const [revealStage, setRevealStage] = useState(() => sessionStorage.getItem('welcomeSeen') ? 3 : 0)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -342,7 +286,7 @@ function App() {
 
       const data = await response.json()
 
-      if (data.valid) {
+      if (data.valid && data.token && data.unlockProof) {
         const alreadyUnlocked = getUnlockedFragments().includes(data.fragment)
         setFragmentToken(data.token)
 
@@ -557,13 +501,33 @@ function App() {
         </button>
         {showArchivesDropdown && (
           <div className="corner-dropdown__panel corner-dropdown__panel--left">
-            {ARCHIVES.map(archive => {
+            {ARCHIVES_META.map(archive => {
               const unlocked = unlockedCount >= archive.id
               return (
                 <button
                   key={archive.id}
                   className={`corner-dropdown__item${unlocked ? '' : ' corner-dropdown__item--locked'}`}
-                  onClick={() => { if (unlocked) { playPageFlip(); setSelectedArchive(archive) } }}
+                  onClick={() => {
+                    if (!unlocked) return
+                    playPageFlip()
+                    // Fetch archive content from server
+                    const storedProofs = JSON.parse(localStorage.getItem('unlockedFragments') || '[]')
+                    const endpoint = window.location.hostname === 'localhost'
+                      ? 'http://localhost:3001/api/archive-content'
+                      : '/api/archive-content'
+                    fetch(endpoint, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ archiveId: archive.id, unlockProofs: storedProofs })
+                    })
+                      .then(res => res.json())
+                      .then(data => {
+                        if (data.content) {
+                          setSelectedArchive({ ...archive, content: data.content })
+                        }
+                      })
+                      .catch(() => {})
+                  }}
                   disabled={!unlocked}
                 >
                   {unlocked ? `📄 ${archive.title}` : `🔒 ??? (${archive.id}/4 shards)`}

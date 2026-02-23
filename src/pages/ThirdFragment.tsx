@@ -2,55 +2,52 @@ import { useState, useEffect } from 'react'
 import './CSS/ThirdFragment.css'
 import { playClick } from '../utils/playClick'
 import { useTokenVerification } from '../utils/useTokenVerification'
-import happyfamilyPT1 from '../assets/HappyFamily_pt1.png'
-import happyfamilyPT2 from '../assets/HappyFamily_pt2.png'
-import happyfamilyPT3 from '../assets/HappyFamily_pt3.png'
-import happyfamilyPT4 from '../assets/HappyFamily_pt4.png'
-
-// 🕐 Schedule: [hour, minute]
-const SCHEDULE = [
-  { time: [15, 30], image: happyfamilyPT3, label: 'Part 3' },
-  { time: [17, 30], image: happyfamilyPT1, label: 'Part 1' },
-  { time: [19, 30], image: happyfamilyPT2, label: 'Part 2' },
-  { time: [21, 30], image: happyfamilyPT4, label: 'Part 4' },
-]
-
-function getActiveImage() {
-  const now = new Date()
-  const currentMinutes = now.getHours() * 60 + now.getMinutes()
-
-  let activeImage: string | null = null
-  let activeLabel = 'No image yet'
-
-  for (const entry of SCHEDULE) {
-    const entryMinutes = entry.time[0] * 60 + entry.time[1]
-    if (currentMinutes >= entryMinutes && currentMinutes <= entryMinutes + 5) {
-      activeImage = entry.image
-      activeLabel = entry.label
-    }
-  }
-
-  return { activeImage, activeLabel }
-}
 
 function ThirdFragment({ onGoBack, token }: { onGoBack: () => void; token: string | null }) {
   const status = useTokenVerification(token, 'ThirdFragment')
   const [currentImage, setCurrentImage] = useState<string | null>(null)
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
 
   const handleGoBack = () => {
     onGoBack()
   }
 
-  // Update image every minute based on real time
+  // Fetch the active image from the server (schedule is server-side only)
   useEffect(() => {
+    if (status !== 'verified' || !token) return
+
+    const endpoint = window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api/fragment-image'
+      : '/api/fragment-image'
+
     const update = () => {
-      const { activeImage } = getActiveImage()
-      setCurrentImage(activeImage)
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, fragment: 'ThirdFragment' })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.available && data.imageUrl) {
+            const imageFullUrl = window.location.hostname === 'localhost'
+              ? `http://localhost:3001${data.imageUrl}`
+              : data.imageUrl
+            setCurrentImage(imageFullUrl)
+            setDownloadUrl(imageFullUrl)
+          } else {
+            setCurrentImage(null)
+            setDownloadUrl(null)
+          }
+        })
+        .catch(() => {
+          setCurrentImage(null)
+          setDownloadUrl(null)
+        })
     }
     update()
     const interval = setInterval(update, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [status, token])
 
   if (status === 'loading') {
     return <div className="third-fragment-page"><div className="container"><p style={{ color: '#aaa', fontSize: '1.2rem' }}>Verifying access...</p></div></div>
@@ -87,9 +84,11 @@ function ThirdFragment({ onGoBack, token }: { onGoBack: () => void; token: strin
             <>
               <img id="previewImage" src={currentImage} alt="Third Mission" />
               <div className="coming-soon-divider"></div>
-              <a className="image-download" href={currentImage} download>
-                ⬇ Download Image
-              </a>
+              {downloadUrl && (
+                <a className="image-download" href={downloadUrl} download>
+                  ⬇ Download Image
+                </a>
+              )}
             </>
           ) : (
             <p style={{ color: '#aaa', fontSize: '1rem', marginTop: '2rem' }}>

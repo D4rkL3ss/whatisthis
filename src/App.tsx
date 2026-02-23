@@ -8,10 +8,10 @@ import ThirdFragment from './pages/ThirdFragment';
 import FourthFragment from './pages/ForthFragment'
 
 const ARCHIVES_META = [
-  { id: 1, title: 'The First Mission', type: 'call' as const },
-  { id: 2, title: 'The Creature of the Abyss', type: 'document' as const },
-  { id: 3, title: 'Echoes of the Shattered', type: 'document' as const },
-  { id: 4, title: 'The Detective\'s Journal', type: 'document' as const },
+  { id: 1, title: 'The First Mission', type: 'call' as const, fragment: 'FirstFragment' },
+  { id: 2, title: 'The Creature of the Abyss', type: 'document' as const, fragment: 'SecondFragment' },
+  { id: 3, title: 'Echoes of the Shattered', type: 'document' as const, fragment: 'ThirdFragment' },
+  { id: 4, title: 'The Detective\'s Journal', type: 'document' as const, fragment: 'FourthFragment' },
 ]
 
 const FRAGMENT_LABELS: Record<string, string> = {
@@ -502,7 +502,7 @@ function App() {
         {showArchivesDropdown && (
           <div className="corner-dropdown__panel corner-dropdown__panel--left">
             {ARCHIVES_META.map(archive => {
-              const unlocked = unlockedCount >= archive.id
+              const unlocked = getUnlockedFragments().includes(archive.fragment)
               return (
                 <button
                   key={archive.id}
@@ -530,7 +530,7 @@ function App() {
                   }}
                   disabled={!unlocked}
                 >
-                  {unlocked ? `📄 ${archive.title}` : `🔒 ??? (${archive.id}/4 shards)`}
+                  {unlocked ? `📄 ${archive.title}` : `🔒 ???`}
                 </button>
               )
             })}

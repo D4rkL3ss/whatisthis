@@ -353,7 +353,15 @@ Last night, I dreamed of her standing at the edge of a bottomless chasm, pale an
 I fear the creature has not taken her from me… but to me. The sin that birthed her has come full circle, and in the silence of these nights, I begin to wonder if what vanished in that house was not the Braddocks, nor even the child, but my last fragment of salvation.`,
 };
 
-// Serve archive content (requires valid unlock proofs)
+// Map archive IDs to their required fragment
+const ARCHIVE_FRAGMENT_MAP = {
+  1: 'FirstFragment',
+  2: 'SecondFragment',
+  3: 'ThirdFragment',
+  4: 'FourthFragment',
+};
+
+// Serve archive content (requires valid unlock proof for the matching fragment)
 app.post('/api/archive-content', (req, res) => {
   const { archiveId, unlockProofs } = req.body;
 
@@ -365,20 +373,16 @@ app.post('/api/archive-content', (req, res) => {
     return res.status(400).json({ error: 'Invalid proofs' });
   }
 
-  // Count how many valid unlock proofs the user has
-  let validCount = 0;
-  const seen = new Set();
-  for (const entry of unlockProofs) {
-    if (entry && entry.fragment && entry.proof && !seen.has(entry.fragment)) {
-      if (verifyUnlockProof(entry.proof, entry.fragment)) {
-        validCount++;
-        seen.add(entry.fragment);
-      }
-    }
-  }
+  // Find the fragment required for this archive
+  const requiredFragment = ARCHIVE_FRAGMENT_MAP[archiveId];
 
-  // Archive N requires N valid unlock proofs
-  if (validCount < archiveId) {
+  // Check that the user has a valid unlock proof for the specific fragment
+  const hasProof = unlockProofs.some(entry =>
+    entry && entry.fragment === requiredFragment && entry.proof &&
+    verifyUnlockProof(entry.proof, requiredFragment)
+  );
+
+  if (!hasProof) {
     return res.status(403).json({ error: 'Insufficient unlocks' });
   }
 

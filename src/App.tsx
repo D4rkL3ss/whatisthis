@@ -239,10 +239,10 @@ function App() {
       }
 
       // Check if the sequence matches "reset" — show reset confirmation
-      //if (keySequenceRef.current.endsWith('reset')) {
-       // setShowResetConfirm(true)
-       // keySequenceRef.current = ''
-      //}
+      if (keySequenceRef.current.endsWith('reset')) {
+        setShowResetConfirm(true)
+        keySequenceRef.current = ''
+      }
     }
     
     window.addEventListener('keydown', handleKeyPress)

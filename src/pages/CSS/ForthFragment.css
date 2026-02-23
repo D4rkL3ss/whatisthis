@@ -1,0 +1,233 @@
+@import '../../styles/fonts.css';
+
+.fourth-fragment-page {
+  justify-content: center;
+  max-width: 1280px;
+  height: 100%;
+  text-align: center;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.fourth-fragment-page .sound-toggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(113, 90, 90, 0.3);
+  border: 2px solid rgba(211, 218, 217, 0.4);
+  border-radius: 8px;
+  color: rgba(211, 218, 217, 0.9);
+  font-family: 'Enigmatic', sans-serif;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.fourth-fragment-page .sound-toggle:hover {
+  background: rgba(113, 90, 90, 0.5);
+  border-color: rgba(211, 218, 217, 0.7);
+  box-shadow: 0 0 15px rgba(113, 90, 90, 0.4);
+}
+
+.coming-soon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 3.5rem;
+  background: radial-gradient(ellipse at center, rgba(113, 90, 90, 0.15) 0%, rgba(55, 53, 62, 0.4) 100%);
+  border: 2px solid rgba(211, 218, 217, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(113, 90, 90, 0.1);
+  max-width: 500px;
+  position: relative;
+}
+
+.coming-soon-icon {
+  font-size: 4rem;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(180, 130, 200, 0.4));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.coming-soon-title {
+  font-family: 'YellowPumpkin', sans-serif;
+  font-size: 2.5em;
+  color: rgba(211, 218, 217, 0.9);
+  margin: 0;
+  text-shadow: 0 0 30px rgba(113, 90, 90, 0.5);
+  letter-spacing: 2px;
+}
+
+.coming-soon-text {
+  font-family: 'Enigmatic', sans-serif;
+  font-size: 1.1em;
+  color: rgba(211, 218, 217, 0.7);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.coming-soon-divider {
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(211, 218, 217, 0.3), transparent);
+  margin: 0.5rem 0;
+}
+
+.coming-soon-subtext {
+  font-family: 'Enigmatic', sans-serif;
+  font-size: 0.9em;
+  color: rgba(211, 218, 217, 0.4);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.coming-soon-pulse {
+  width: 8px;
+  height: 8px;
+  background: rgba(211, 218, 217, 0.5);
+  border-radius: 50%;
+  margin-top: 0.5rem;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+    box-shadow: 0 0 0 0 rgba(211, 218, 217, 0.4);
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+    box-shadow: 0 0 20px 5px rgba(211, 218, 217, 0.2);
+  }
+}
+
+/* Mobile */
+@media (max-width: 425px) {
+  .coming-soon-container {
+    padding: 2rem 1.5rem;
+    margin: 0 1rem;
+  }
+  .coming-soon-title {
+    font-size: 1.8em;
+  }
+  .coming-soon-icon {
+    font-size: 3rem;
+  }
+}
+
+/* Small Devices (375px - 425px) */
+@media (min-width: 375px) and (max-width: 425px) {
+  .first-fragment-page {
+    padding: 1rem;
+  }
+
+  .first-fragment-page .title-container {
+    gap: 0.75rem;
+  }
+
+  .first-fragment-page h1 {
+    font-size: 3em;
+  }
+
+  .first-fragment-page .logo {
+    height: 6rem;
+    padding: 0.75rem;
+  }
+
+  .first-fragment-page .fragment-title {
+    font-size: 2em;
+  }
+}
+
+/* Standard Android Devices (426px - 599px) */
+@media (min-width: 426px) and (max-width: 599px) {
+  .first-fragment-page {
+    padding: 1.5rem;
+  }
+
+  .first-fragment-page .title-container {
+    gap: 0.75rem;
+  }
+
+  .first-fragment-page h1 {
+    font-size: 4em;
+  }
+
+  .first-fragment-page .logo {
+    height: 7rem;
+    padding: 0.75rem;
+  }
+
+  .first-fragment-page .fragment-title {
+    font-size: 2.3em;
+  }
+}
+
+/* Tablets - Small (600px - 767px) */
+@media (min-width: 600px) and (max-width: 767px) {
+  .first-fragment-page {
+    padding: 1.5rem;
+  }
+
+  .first-fragment-page h1 {
+    font-size: 5em;
+  }
+
+  .first-fragment-page .logo {
+    height: 8rem;
+  }
+
+  .first-fragment-page .fragment-title {
+    font-size: 2.6em;
+  }
+}
+
+/* Tablets - Large (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .first-fragment-page {
+    padding: 2rem;
+  }
+
+  .first-fragment-page h1 {
+    font-size: 6em;
+  }
+
+  .first-fragment-page .logo {
+    height: 9rem;
+  }
+
+  .first-fragment-page .fragment-title {
+    font-size: 2.8em;
+  }
+}
+
+/* Large Screens (1025px and above) */
+@media (min-width: 1025px) {
+  .first-fragment-page h1 {
+    font-size: 8em;
+  }
+
+  .first-fragment-page .logo {
+    height: 10rem;
+  }
+
+  .first-fragment-page .fragment-title {
+    font-size: 3em;
+  }
+}

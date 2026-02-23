@@ -1,8 +1,12 @@
 import './CSS/SecondFragment.css'
+import myVideo from '../assets/monstervideo.mp4'
+import { playClick } from '../utils/playClick'
 
-function SecondFragment() {
+function SecondFragment({ onGoBack }: { onGoBack: () => void }) {
+
   const handleGoBack = () => {
-    window.location.href = '/'
+      playClick()
+      onGoBack()
   }
 
   return (
@@ -19,7 +23,25 @@ function SecondFragment() {
         ← Back
       </button>
       <div className="container">
-        
+        <h1 className="fragment-title">The Lair of the Monster</h1>
+        <div className="Video-container">
+          <video
+            className="Video-media"
+            autoPlay
+            loop
+            muted
+            playsInline
+            controls
+            preload="metadata"
+          >
+            <source src={myVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="coming-soon-divider"></div>
+          <a className="Video-download" href={myVideo} download>
+            ⬇ Download Video
+          </a>
+        </div>
       </div>
     </div>
   )

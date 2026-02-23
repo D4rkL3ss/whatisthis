@@ -16,8 +16,10 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // Store codes securely (in production, use a database)
 const validCodes = {
-  'The First Fragment': { shardNumber: 1, fragmentComponent: 'FirstFragment' },
-  "He's Always Watching": { shardNumber: 2, fragmentComponent: 'SecondFragment' }
+  'THE FIRST FRAGMENT': { shardNumber: 1, fragmentComponent: 'FirstFragment' },
+  "HE'S ALWAYS WATCHING": { shardNumber: 2, fragmentComponent: 'SecondFragment' },
+  "HAPPY FAMILY": { shardNumber: 3, fragmentComponent: 'ThirdFragment' },
+  "SHADOWS FROM THE PAST": { shardNumber: 4, fragmentComponent: 'FourthFragment' }
 };
 
 // Rate limiting - simple implementation

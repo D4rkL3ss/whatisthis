@@ -182,6 +182,28 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
+// ── Global reset epoch ──
+// Bump this to force every client to clear localStorage on next visit.
+// Persists only in memory; resets to 0 on redeploy (which is fine — a
+// redeploy already changes UNLOCK_SECRET if you rotate it).
+let resetEpoch = 0;
+
+app.get('/api/reset-epoch', (_req, res) => {
+  res.json({ epoch: resetEpoch });
+});
+
+// Admin endpoint: POST /api/admin/reset-all  { secret }
+// Increments the reset epoch so every client wipes its localStorage.
+app.post('/api/admin/reset-all', (req, res) => {
+  const { secret } = req.body;
+  if (!secret || secret !== UNLOCK_SECRET) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  resetEpoch++;
+  console.log(`[ADMIN] Global reset triggered — epoch is now ${resetEpoch}`);
+  res.json({ ok: true, epoch: resetEpoch });
+});
+
 // Rate limiting - simple implementation
 const rateLimitMap = new Map();
 

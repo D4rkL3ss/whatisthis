@@ -99,6 +99,28 @@ function App() {
   // Initialize counter from localStorage on mount
   useEffect(() => {
     setUnlockedCount(getUnlockedFragments().length)
+
+    // Check server reset epoch — if the server bumped it, wipe localStorage
+    const endpoint = window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api/reset-epoch'
+      : '/api/reset-epoch'
+
+    fetch(endpoint)
+      .then(r => r.json())
+      .then(data => {
+        const serverEpoch = data.epoch ?? 0
+        const localEpoch = parseInt(localStorage.getItem('resetEpoch') || '0', 10)
+        if (serverEpoch > localEpoch) {
+          localStorage.removeItem('unlockedFragments')
+          localStorage.setItem('resetEpoch', String(serverEpoch))
+          setUnlockedCount(0)
+          setShowWelcome(true)
+          setRevealStage(0)
+          setIsTimerBypassed(false)
+          sessionStorage.removeItem('welcomeSeen')
+        }
+      })
+      .catch(() => { /* offline / first load — ignore */ })
   }, [])
 
   // SSE: subscribe to active-users stream

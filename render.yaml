@@ -10,3 +10,5 @@ services:
         value: production
       - key: VITE_API_URL
         value: /api
+      - key: UNLOCK_SECRET
+        sync: false

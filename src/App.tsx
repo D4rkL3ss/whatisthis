@@ -324,30 +324,45 @@ function App() {
 
       const data = await response.json()
 
-      if (data.valid && data.token && data.unlockProof) {
+      if (data.valid && data.unlockProof) {
         const alreadyUnlocked = getUnlockedFragments().includes(data.fragment)
-        setFragmentToken(data.token)
+
+        // Save the server-signed unlock proof (client stores proof only)
+        if (!alreadyUnlocked) saveUnlockedFragment(data.fragment, data.unlockProof)
+
+        // If the fragment was already unlocked, navigate immediately by
+        // reissuing a token via the `/api/reissue-token` endpoint. For a
+        // first-time unlock we still show the shard popup then navigate.
+        const base = window.location.hostname === 'localhost' ? 'http://localhost:3001' : ''
 
         if (alreadyUnlocked) {
-          // Skip popup, go directly to fragment
+          await navigateToFragment(data.fragment)
+          return
+        }
+
+        setCollectedShardNumber(data.shardNumber)
+
+        // Try to obtain a usable token for immediate viewing (non-privileged)
+        try {
+          const reissueResp = await fetch(`${base}/api/reissue-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fragment: data.fragment, unlockProof: data.unlockProof })
+          })
+          const rd = await reissueResp.json()
+          if (rd.valid && rd.token) setFragmentToken(rd.token)
+        } catch (e) {
+          // ignore — fragment can still be navigated later which will reissue
+        }
+
+        setTimeout(() => {
           if (data.fragment === 'FirstFragment') setShowFirstFragment(true)
           else if (data.fragment === 'SecondFragment') setShowSecondFragment(true)
           else if (data.fragment === 'ThirdFragment') setShowThirdFragment(true)
           else if (data.fragment === 'FourthFragment') setShowFourthFragment(true)
           else if (data.fragment === 'FifthFragment') setShowFifthFragment(true)
-        } else {
-          // First time — show shard popup then navigate
-          setCollectedShardNumber(data.shardNumber)
-          saveUnlockedFragment(data.fragment, data.unlockProof)
-          setTimeout(() => {
-            if (data.fragment === 'FirstFragment') setShowFirstFragment(true)
-            else if (data.fragment === 'SecondFragment') setShowSecondFragment(true)
-            else if (data.fragment === 'ThirdFragment') setShowThirdFragment(true)
-            else if (data.fragment === 'FourthFragment') setShowFourthFragment(true)
-            else if (data.fragment === 'FifthFragment') setShowFifthFragment(true)
-            setCollectedShardNumber(null)
-          }, 3000)
-        }
+          setCollectedShardNumber(null)
+        }, 3000)
       } else {
         setShowError(true)
       }

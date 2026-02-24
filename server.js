@@ -273,13 +273,17 @@ app.post('/api/validate-code', (req, res) => {
   const codeData = validCodes[trimmedCode];
 
   if (codeData) {
-    const token = generateToken(codeData.fragmentComponent);
+    // For security: do not issue usable tokens directly from a plain
+    // code submission. Instead return an HMAC-signed unlock proof that
+    // the client must present to `/api/reissue-token` to obtain a
+    // short-lived token. This prevents someone from pasting a code in
+    // the console and immediately using the returned token to claim
+    // rewards.
     const unlockProof = createUnlockProof(codeData.fragmentComponent);
     return res.json({ 
       valid: true, 
       shardNumber: codeData.shardNumber,
       fragment: codeData.fragmentComponent,
-      token,
       unlockProof
     });
   }
@@ -525,8 +529,29 @@ const ARCHIVE_FRAGMENT_MAP = {
 // simple: clients must call this endpoint to obtain the server-signed proof
 // which will then be stored alongside other unlock proofs in localStorage.
 app.post('/api/claim-secret', (req, res) => {
-  // In a more secure setup we'd require additional verification. For now,
-  // simply issue the unlock proof so the client can access archive 5.5.
+  // Require the client to present valid unlock proofs for the five main
+  // fragments before issuing the server-signed proof for the secret
+  // archive. This prevents callers from obtaining the secret proof with
+  // a simple unauthenticated request.
+  const { unlockProofs } = req.body || {}
+
+  if (!Array.isArray(unlockProofs)) {
+    return res.status(400).json({ error: 'Invalid proofs' })
+  }
+
+  const required = ['FirstFragment', 'SecondFragment', 'ThirdFragment', 'FourthFragment', 'FifthFragment']
+
+  // Verify we have a valid proof for each required fragment
+  const allValid = required.every(fragmentName => {
+    const entry = unlockProofs.find(e => e && e.fragment === fragmentName)
+    if (!entry || !entry.proof) return false
+    return verifyUnlockProof(entry.proof, fragmentName)
+  })
+
+  if (!allValid) {
+    return res.status(403).json({ error: 'Insufficient unlocks' })
+  }
+
   const proof = createUnlockProof('Secret5_5')
   res.json({ fragment: 'Secret5_5', proof })
 })
@@ -552,7 +577,8 @@ app.post('/api/archive-content', (req, res) => {
   // still view the secret archive when the claim endpoint failed earlier.
   const hasProof = unlockProofs.some(entry => {
     if (!entry || !entry.fragment || !entry.proof) return false
-    if (entry.fragment === 'Secret5_5' && entry.proof === 'CLIENT-FALLBACK') return true
+    // Allow a developer fallback only in non-production environments.
+    if (process.env.NODE_ENV !== 'production' && entry.fragment === 'Secret5_5' && entry.proof === 'CLIENT-FALLBACK') return true
     return entry.fragment === requiredFragment && verifyUnlockProof(entry.proof, requiredFragment)
   })
 

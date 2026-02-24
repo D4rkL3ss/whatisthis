@@ -21,7 +21,7 @@ const FRAGMENT_LABELS: Record<string, string> = {
   FirstFragment: 'The First Mission',
   SecondFragment: 'The Creature of the Abyss',
   ThirdFragment: 'Echoes of the Shattered',
-  FourthFragment: '???',
+  FourthFragment: 'The Abyss',
   FifthFragment: 'Hope and Despair',
 }
 

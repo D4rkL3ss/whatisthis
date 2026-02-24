@@ -485,7 +485,7 @@ export default function MazeGame({ onComplete }: { onComplete: () => void }) {
   }, [phase])
 
   /* ── debug overlay keybind ── */
-  /* Debug overlay keybind disabled for production publish.  */
+  /* Debug overlay keybind disabled for production publish.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.key === 'b' || e.key === 'B') && (phase === 'playing' || phase === 'boss')) {
@@ -495,9 +495,9 @@ export default function MazeGame({ onComplete }: { onComplete: () => void }) {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [phase])
-  
+  */
 
-  /* Sync debug state to gs.current disabled for publish.  */
+  /* Sync debug state to gs.current disabled for publish.
   useEffect(() => {
     gs.current.debugInvincible = debug.invincible
     gs.current.debugReveal = debug.reveal
@@ -505,6 +505,8 @@ export default function MazeGame({ onComplete }: { onComplete: () => void }) {
     gs.current.debugShowButtons = debug.showButtons
     gs.current.debugShowSecret = debug.showSecret
   }, [debug])
+
+  */
 
   /* ── init level ── */
   const initLevel = useCallback((lvl: number) => {
@@ -1317,8 +1319,8 @@ export default function MazeGame({ onComplete }: { onComplete: () => void }) {
      Render JSX
      ═══════════════════════════════════════ */
 
-  // Simple debug overlay UI (compact floating panel).
-  const debugOverlay = (
+  /* Simple debug overlay UI (compact floating panel). */
+  const debugOverlay = (/*
     <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 3000 }}>
       <div style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', padding: 8, borderRadius: 6, minWidth: 160, fontSize: 13 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -1351,7 +1353,7 @@ export default function MazeGame({ onComplete }: { onComplete: () => void }) {
         )}
       </div>
     </div>
-  )
+  */null)
 
   return (
     <div className="maze-game" style={{ position: 'relative' }}>

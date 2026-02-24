@@ -130,7 +130,7 @@ const validCodes = {
   "HE'S ALWAYS WATCHING": { shardNumber: 2, fragmentComponent: 'SecondFragment' },
   "HAPPY FAMILY": { shardNumber: 3, fragmentComponent: 'ThirdFragment' },
   "SHADOWS FROM THE PAST": { shardNumber: 4, fragmentComponent: 'FourthFragment' },
-  "HOPE AND DESPAIR": { shardNumber: 5, fragmentComponent: 'FifthFragment' }
+  "HOPE AND DESESPERATION": { shardNumber: 5, fragmentComponent: 'FifthFragment' }
 };
 
 
@@ -204,7 +204,6 @@ app.post('/api/admin/reset-all', (req, res) => {
     return res.status(403).json({ error: 'Forbidden' });
   }
   resetEpoch++;
-  console.log(`[ADMIN] Global reset triggered — epoch is now ${resetEpoch}`);
   res.json({ ok: true, epoch: resetEpoch });
 });
 
@@ -245,7 +244,33 @@ const VOID_MESSAGES = [
 ];
 
 app.get('/api/void-messages', (_req, res) => {
-  res.json({ messages: VOID_MESSAGES });
+  // Allow callers with a valid FifthFragment token to see full messages.
+  // Otherwise return a sanitized subset to avoid revealing next-fragment hints.
+  const authHeader = _req.headers['authorization'] || '';
+  let token = null;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    token = authHeader.slice(7);
+  }
+  if (!token && _req.query && typeof _req.query.token === 'string') {
+    token = _req.query.token;
+  }
+
+  if (token && verifyToken(token, 'FifthFragment')) {
+    return res.json({ messages: VOID_MESSAGES });
+  }
+
+  // Non-authenticated callers: filter out messages that explicitly
+  // point to the next fragment or are intentionally spoiler-ish.
+  const safe = VOID_MESSAGES.filter(m => {
+    if (!m || !m.text) return false;
+    if (typeof m.text !== 'string') return false;
+    // Remove messages that look like 'Next Fragment' spoilers or have high t values
+    if (/next fragment/i.test(m.text)) return false;
+    if (m.t && m.t >= 12) return false;
+    return true;
+  }).map(m => ({ t: m.t, text: m.text }));
+
+  res.json({ messages: safe });
 });
 
 app.post('/api/validate-code', (req, res) => {
@@ -752,5 +777,4 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
 });

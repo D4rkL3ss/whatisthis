@@ -961,7 +961,7 @@ export default function MazeGame({ onComplete }: { onComplete: () => void }) {
         { t: 2, text: 'You were never meant to reach the end.' },
         { t: 5, text: 'The Abyss has no bottom.' },
         { t: 8, text: 'You fall… and fall… and fall…' },
-        { t: 12, text: 'Next Fragment: HOPE AND DESPAIR' },
+        { t: 12, text: 'Next Fragment: HOPE AND DESESPERATION' },
       ]
       const vms = voidMessages || vmFallback
       for (const m of vms) {

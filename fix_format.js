@@ -5,13 +5,13 @@ let content = fs.readFileSync(file, 'utf8');
 // Find the id: 3 content between backticks
 const marker = "{ id: 3, title: 'Echoes of the Shattered', content: `";
 const idx = content.indexOf(marker);
-if (idx < 0) { console.log('marker not found'); process.exit(1); }
+if (idx < 0) { process.exit(1); }
 
 const contentStart = idx + marker.length;
 const rest = content.substring(contentStart);
 const endMarker = '`, type:';
 const endIdx = rest.indexOf(endMarker);
-if (endIdx < 0) { console.log('end marker not found'); process.exit(1); }
+if (endIdx < 0) { process.exit(1); }
 
 let inner = rest.substring(0, endIdx);
 
@@ -31,4 +31,3 @@ const after = rest.substring(endIdx);
 content = before + "{ id: 3, title: 'Echoes of the Shattered', content: `" + formatted + after;
 
 fs.writeFileSync(file, content, 'utf8');
-console.log('Done - formatted ' + paragraphs.length + ' paragraphs');

@@ -6,12 +6,15 @@ import FirstFragment from './pages/FirstFragment'
 import SecondFragment from './pages/SecondFragment'
 import ThirdFragment from './pages/ThirdFragment';
 import FourthFragment from './pages/ForthFragment'
+import FifthFragment from './pages/FifthFragment'
 
 const ARCHIVES_META = [
   { id: 1, title: 'The First Mission', type: 'call' as const, fragment: 'FirstFragment' },
   { id: 2, title: 'The Creature of the Abyss', type: 'document' as const, fragment: 'SecondFragment' },
   { id: 3, title: 'Echoes of the Shattered', type: 'document' as const, fragment: 'ThirdFragment' },
   { id: 4, title: 'The Detective\'s Journal', type: 'document' as const, fragment: 'FourthFragment' },
+  { id: 5, title: 'Hope and Despair', type: 'call' as const, fragment: 'FifthFragment' },
+  { id: 5.5, title: 'Secret Archives', type: 'document' as const, fragment: 'Secret5_5' },
 ]
 
 const FRAGMENT_LABELS: Record<string, string> = {
@@ -19,7 +22,9 @@ const FRAGMENT_LABELS: Record<string, string> = {
   SecondFragment: 'The Creature of the Abyss',
   ThirdFragment: 'Echoes of the Shattered',
   FourthFragment: '???',
+  FifthFragment: 'Hope and Despair',
 }
+
 
 function App() {
   const [timeLeft, setTimeLeft] = useState({
@@ -34,6 +39,7 @@ function App() {
   const [showSecondFragment, setShowSecondFragment] = useState(false)
   const [showThirdFragment, setShowThirdFragment] = useState(false)
   const [showFourthFragment, setShowFourthFragment] = useState(false)
+  const [showFifthFragment, setShowFifthFragment] = useState(false)
   const [showError, setShowError] = useState(false)
   const [collectedShardNumber, setCollectedShardNumber] = useState<number | null>(null)
   const [isTimerBypassed, setIsTimerBypassed] = useState(false)
@@ -121,6 +127,13 @@ function App() {
         }
       })
       .catch(() => { /* offline / first load — ignore */ })
+  }, [])
+
+  // Listen for unlockedFragments changes (emitted by other components)
+  useEffect(() => {
+    const handler = () => setUnlockedCount(getUnlockedFragments().length)
+    window.addEventListener('unlockedFragmentsChanged', handler)
+    return () => window.removeEventListener('unlockedFragmentsChanged', handler)
   }, [])
 
   // SSE: subscribe to active-users stream
@@ -245,6 +258,7 @@ function App() {
 
   const handleResetCache = () => {
     localStorage.removeItem('unlockedFragments')
+    localStorage.removeItem('secret-5-5-unlocked')
     sessionStorage.removeItem('welcomeSeen')
     sessionStorage.removeItem('audioMuted')
     setUnlockedCount(0)
@@ -253,6 +267,8 @@ function App() {
     setRevealStage(0)
     setIsTimerBypassed(false)
     setIsMuted(true)
+    // Notify other components in this window to clear any in-memory flags
+    try { window.dispatchEvent(new CustomEvent('secret-reset')) } catch (e) {}
   }
 
   // Audio initialization
@@ -318,6 +334,7 @@ function App() {
           else if (data.fragment === 'SecondFragment') setShowSecondFragment(true)
           else if (data.fragment === 'ThirdFragment') setShowThirdFragment(true)
           else if (data.fragment === 'FourthFragment') setShowFourthFragment(true)
+          else if (data.fragment === 'FifthFragment') setShowFifthFragment(true)
         } else {
           // First time — show shard popup then navigate
           setCollectedShardNumber(data.shardNumber)
@@ -327,6 +344,7 @@ function App() {
             else if (data.fragment === 'SecondFragment') setShowSecondFragment(true)
             else if (data.fragment === 'ThirdFragment') setShowThirdFragment(true)
             else if (data.fragment === 'FourthFragment') setShowFourthFragment(true)
+            else if (data.fragment === 'FifthFragment') setShowFifthFragment(true)
             setCollectedShardNumber(null)
           }, 3000)
         }
@@ -366,6 +384,7 @@ function App() {
     else if (fragment === 'SecondFragment') setShowSecondFragment(true)
     else if (fragment === 'ThirdFragment') setShowThirdFragment(true)
     else if (fragment === 'FourthFragment') setShowFourthFragment(true)
+    else if (fragment === 'FifthFragment') setShowFifthFragment(true)
   }
 
   const goBack = () => {
@@ -373,7 +392,50 @@ function App() {
     setShowSecondFragment(false)
     setShowThirdFragment(false)
     setShowFourthFragment(false)
+    setShowFifthFragment(false)
     setFragmentToken(null)
+  }
+
+  const unlockedCheckpointsCount = () => {
+    const unlocked = getUnlockedFragments()
+    return Object.keys(FRAGMENT_LABELS).filter(k => unlocked.includes(k)).length
+  }
+
+  const hasAllCheckpointsUnlocked = () => {
+    const unlocked = getUnlockedFragments()
+    const required = Object.keys(FRAGMENT_LABELS)
+    return required.every(k => unlocked.includes(k))
+  }
+
+  const handleGetReward = async () => {
+    playClick()
+    // Ensure we have an unlock proof for FifthFragment
+    const proof = getUnlockProof('FifthFragment')
+    if (!proof) return
+
+    const base = window.location.hostname === 'localhost' ? 'http://localhost:3001' : ''
+
+    try {
+      const reissueResp = await fetch(`${base}/api/reissue-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fragment: 'FifthFragment', unlockProof: proof })
+      })
+      const reissueData = await reissueResp.json()
+      if (!reissueData.valid) return
+
+      const token = reissueData.token
+      const rewardResp = await fetch(`${base}/api/fragment-reward`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, fragment: 'FifthFragment' })
+      })
+      if (!rewardResp.ok) return
+      const rd = await rewardResp.json()
+      if (rd.url) window.open(rd.url, '_blank')
+    } catch (e) {
+      // ignore failures silently
+    }
   }
 
   if (showFirstFragment) {
@@ -416,6 +478,17 @@ function App() {
           <source src="/sounds/ambient.mp3" type="audio/mpeg" />
         </audio>
         <FourthFragment onGoBack={goBack} token={fragmentToken} />
+      </>
+    )
+  }
+
+  if (showFifthFragment) {
+    return (
+      <>
+        <audio id="ambient-audio" ref={audioRef} loop>
+          <source src="/sounds/ambient.mp3" type="audio/mpeg" />
+        </audio>
+        <FifthFragment onGoBack={goBack} token={fragmentToken} />
       </>
     )
   }
@@ -513,18 +586,32 @@ function App() {
         </div>
       )}
 
-      {/* Archives dropdown — bottom left */}
-      <div className={`corner-dropdown corner-dropdown--left reveal-element ${revealStage >= 3 ? 'revealed' : ''}`}>
-        <button
-          className="corner-dropdown__trigger"
-          onClick={() => { playClick(); setShowArchivesDropdown(p => !p); setShowCheckpointsDropdown(false) }}
-        >
-          📁 Archives ({unlockedCount}/4)
-        </button>
+      {/* Grouped Archives + Checkpoints — bottom left */}
+      <div className={`corner-dropdown corner-dropdown--left corner-dropdown--grouped reveal-element ${revealStage >= 3 ? 'revealed' : ''}`}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <button
+            className="corner-dropdown__trigger"
+            onClick={() => { playClick(); setShowArchivesDropdown(p => !p); setShowCheckpointsDropdown(false) }}
+          >
+            📁 Archives ({unlockedCount}/{ARCHIVES_META.length})
+          </button>
+          <button
+            className="corner-dropdown__trigger"
+            onClick={() => { playClick(); setShowCheckpointsDropdown(p => !p); setShowArchivesDropdown(false) }}
+          >
+            🕳️ Abyss ({unlockedCheckpointsCount()}/5)
+          </button>
+          {hasAllCheckpointsUnlocked() && (
+          <button className="corner-dropdown__trigger" onClick={handleGetReward}>
+            Get your reward here
+          </button>
+          )}
+        </div>
+
         {showArchivesDropdown && (
           <div className="corner-dropdown__panel corner-dropdown__panel--left">
             {ARCHIVES_META.map(archive => {
-              const unlocked = getUnlockedFragments().includes(archive.fragment)
+                const unlocked = getUnlockedFragments().includes(archive.fragment)
               return (
                 <button
                   key={archive.id}
@@ -532,7 +619,6 @@ function App() {
                   onClick={() => {
                     if (!unlocked) return
                     playPageFlip()
-                    // Fetch archive content from server
                     const storedProofs = JSON.parse(localStorage.getItem('unlockedFragments') || '[]')
                     const endpoint = window.location.hostname === 'localhost'
                       ? 'http://localhost:3001/api/archive-content'
@@ -544,9 +630,7 @@ function App() {
                     })
                       .then(res => res.json())
                       .then(data => {
-                        if (data.content) {
-                          setSelectedArchive({ ...archive, content: data.content })
-                        }
+                        if (data.content) setSelectedArchive({ ...archive, content: data.content })
                       })
                       .catch(() => {})
                   }}
@@ -558,18 +642,9 @@ function App() {
             })}
           </div>
         )}
-      </div>
 
-      {/* Checkpoints dropdown — bottom right */}
-      <div className={`corner-dropdown corner-dropdown--right reveal-element ${revealStage >= 3 ? 'revealed' : ''}`}>
-        <button
-          className="corner-dropdown__trigger"
-          onClick={() => { playClick(); setShowCheckpointsDropdown(p => !p); setShowArchivesDropdown(false) }}
-        >
-          🕳️ Abyss ({getUnlockedFragments().length}/4)
-        </button>
         {showCheckpointsDropdown && (
-          <div className="corner-dropdown__panel corner-dropdown__panel--right">
+          <div className="corner-dropdown__panel corner-dropdown__panel--left">
             {Object.entries(FRAGMENT_LABELS).map(([key, label]) => {
               const unlocked = getUnlockedFragments().includes(key)
               return (
@@ -593,7 +668,11 @@ function App() {
           <div className={`archive-modal__content ${selectedArchive.type === 'call' ? 'archive-modal__content--call' : ''}`} onClick={e => e.stopPropagation()}>
             <div className="archive-modal__scroll">
               <h2 className="archive-modal__title">{selectedArchive.title}</h2>
-              <p className="archive-modal__body">{selectedArchive.content}</p>
+              {selectedArchive.id === 5.5 ? (
+                <div className="archive-modal__body" dangerouslySetInnerHTML={{ __html: selectedArchive.content }} />
+              ) : (
+                <p className="archive-modal__body" style={{ whiteSpace: 'pre-wrap' }}>{selectedArchive.content}</p>
+              )}
               <button className="archive-modal__close" onClick={() => { playClick(); setSelectedArchive(null) }}>Close</button>
             </div>
           </div>
@@ -649,6 +728,10 @@ function App() {
           </div>
         </div>
       )}
+      {/* Version footer */}
+      <div style={{ position: 'fixed', right: '12px', bottom: '8px', fontSize: '0.9rem', color: '#aaa', opacity: 0.95 }}>
+        v1.2
+      </div>
     </>
   )
 }

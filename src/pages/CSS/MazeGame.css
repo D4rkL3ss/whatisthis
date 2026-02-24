@@ -1,0 +1,231 @@
+/* ═══════════════════════════════════════
+   Maze Game
+   ═══════════════════════════════════════ */
+
+.maze-game {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* ── Canvas ── */
+.maze-canvas {
+  display: block;
+  max-width: min(700px, 85vmin);
+  max-height: min(700px, 85vmin);
+  width: 700px;
+  height: 700px;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+}
+
+/* ── D-Pad (touch controls) ── */
+.maze-dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.maze-dpad__row {
+  display: flex;
+  gap: 4px;
+}
+
+.maze-dpad__btn {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #888;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+
+.maze-dpad__btn:active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ccc;
+}
+
+.maze-dpad__up,
+.maze-dpad__down {
+  margin: 0 auto;
+}
+
+/* ── Overlays ── */
+.maze-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10;
+  animation: mazeOverlayIn 0.4s ease-out;
+}
+
+.maze-overlay--death {
+  background: rgba(30, 0, 0, 0.88);
+}
+
+.maze-overlay--transition {
+  background: rgba(0, 0, 0, 0.92);
+}
+
+.maze-overlay--complete {
+  background: rgba(0, 0, 0, 0.93);
+}
+
+.maze-overlay__card {
+  text-align: center;
+  max-width: 420px;
+  padding: 2rem 1.5rem;
+}
+
+.maze-overlay__card--lore {
+  max-width: 520px;
+  max-height: 75vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.maze-overlay__icon {
+  font-size: 2.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.maze-overlay__title {
+  font-family: 'Enigmatic', serif;
+  font-size: 1.8rem;
+  color: #ccc;
+  margin: 0 0 1rem;
+}
+
+.maze-overlay__title--death {
+  color: #c0392b;
+  font-size: 1.5rem;
+  font-style: italic;
+}
+
+.maze-overlay__title--complete {
+  color: #7b5ea7;
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.maze-overlay__text {
+  color: #888;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 1rem;
+}
+
+.maze-overlay__hint {
+  color: #555;
+  font-size: 0.82rem;
+  margin: 0.5rem 0 1.2rem;
+}
+
+.maze-overlay__btn {
+  background: transparent;
+  border: 1px solid #555;
+  color: #aaa;
+  padding: 0.6rem 1.6rem;
+  font-size: 0.95rem;
+  font-family: 'Enigmatic', serif;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.maze-overlay__btn:hover {
+  border-color: #888;
+  color: #ddd;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.maze-overlay__lore {
+  color: #999;
+  font-size: 0.92rem;
+  line-height: 1.75;
+}
+
+.maze-overlay__lore p {
+  margin: 0 0 1rem;
+}
+
+/* ── Animations ── */
+@keyframes mazeOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Button notice ── */
+.maze-button-notice {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 200, 50, 0.3);
+  color: rgba(255, 200, 50, 0.9);
+  padding: 0.8rem 1.5rem;
+  font-size: 0.95rem;
+  font-family: 'Enigmatic', serif;
+  font-style: italic;
+  border-radius: 4px;
+  z-index: 15;
+  pointer-events: none;
+  animation: buttonNoticeIn 0.5s ease-out, buttonNoticeOut 0.8s ease-in 2.2s forwards;
+  text-align: center;
+}
+
+@keyframes buttonNoticeIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes buttonNoticeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── Attack button (D-pad) ── */
+.maze-dpad__attack {
+  background: rgba(255, 100, 100, 0.1);
+  border-color: rgba(255, 100, 100, 0.25);
+  color: #c66;
+  font-size: 1.3rem;
+}
+
+.maze-dpad__attack:active {
+  background: rgba(255, 100, 100, 0.3);
+  color: #ff8888;
+}
+
+/* ── Void retry button ── */
+.maze-void-retry {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  animation: mazeOverlayIn 1s ease-out 15s both;
+}
+@keyframes mazeOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

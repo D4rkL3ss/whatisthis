@@ -4,6 +4,7 @@ import cors from 'cors';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -128,8 +129,11 @@ const validCodes = {
   'THE FIRST FRAGMENT': { shardNumber: 1, fragmentComponent: 'FirstFragment' },
   "HE'S ALWAYS WATCHING": { shardNumber: 2, fragmentComponent: 'SecondFragment' },
   "HAPPY FAMILY": { shardNumber: 3, fragmentComponent: 'ThirdFragment' },
-  "SHADOWS FROM THE PAST": { shardNumber: 4, fragmentComponent: 'FourthFragment' }
+  "SHADOWS FROM THE PAST": { shardNumber: 4, fragmentComponent: 'FourthFragment' },
+  "HOPE AND DESPAIR": { shardNumber: 5, fragmentComponent: 'FifthFragment' }
 };
+
+
 
 // Token store: token -> { fragment, createdAt }
 const tokenStore = new Map();
@@ -230,6 +234,18 @@ app.get('/api/get-time', async (req, res) => {
     timestamp: now.getTime(),
     iso: now.toISOString()
   });
+});
+
+// Void ending / bad-ending messages (served from server to avoid hard-coding on client)
+const VOID_MESSAGES = [
+  { t: 2, text: 'You were never meant to reach the end.' },
+  { t: 5, text: 'The Abyss has no bottom.' },
+  { t: 8, text: 'You fall… and fall… and fall…' },
+  { t: 12, text: 'Next Fragment: HOPE AND DESPAIR' },
+];
+
+app.get('/api/void-messages', (_req, res) => {
+  res.json({ messages: VOID_MESSAGES });
 });
 
 app.post('/api/validate-code', (req, res) => {
@@ -373,7 +389,126 @@ The legends I once dismissed now feel closer than reason. The mediums I consulte
 Last night, I dreamed of her standing at the edge of a bottomless chasm, pale and still. A shape lingered behind her, vast and formless, its presence almost tender. She looked back once and smiled, not at me, but at the thing beside her. Then they both descended, and the darkness closed like water over them.
 
 I fear the creature has not taken her from me… but to me. The sin that birthed her has come full circle, and in the silence of these nights, I begin to wonder if what vanished in that house was not the Braddocks, nor even the child, but my last fragment of salvation.`,
+  5: `[
+[AUDIO LOG – TRANSCRIPT]
+Case: Braddock Manor
+Recording: ██/██/████ – 02:13 A.M.
+Source: Telephone line tap – Detective Bureau
+Participants: Detective Mark Havers / Officer Lily Carter
+
+Mark: Lily? Are you there? Please tell me it's you...
+
+Lily: …Mark? It’s Lily. I got your message. Why are you calling at this hour?
+
+Mark: Thank you for picking up. I wasn’t sure you would. I needed… I needed a voice that isn’t echoing.
+
+Lily: You sound terrible. Are you at home?
+
+Mark: No. I’m at the office...
+
+Lily: Is this about Braddock Manor again? Mark, the case is closed. They’ve reassigned everyone. You’re off it.
+
+Mark: On paper. But paper doesn’t reach where I’ve been. I went back, but i ended up into another place.
+
+[Brief silence. Only the faint hum of the line.]
+
+Lily: …You mean that place you keep talking about in your notes? The “Abyss” from the old legends? Mark, listen, you’re exhausted. You need—
+
+Mark: I’m not delirious. I crossed over. There’s something beneath that manor. Not a basement. Not a tunnel. A… descent. A place that isn’t supposed to exist.
+
+Lily: Then tell me. Slowly. What did you see down there?
+
+Mark: You don’t really see it at first. It’s like the world runs out of surface. No floor, no walls, no sky, just the absolute nothing. You stand on something that feels solid, but it isn’t there.
+
+Lily: That doesn’t make sense.
+
+Mark: Neither does a house full of people vanishing without a trace. You asked what I saw!
+
+Lily: And the creature? Was it there?
+
+Mark: Yes. But it wasn’t some beast with fangs. It was… absence given shape. Wherever it moved, the world seemed thinner, like a piece of reality had been erased. You couldn’t focus your eyes on it. You just knew something wasn’t where it should be.
+
+Lily: Did it come for you?
+
+Mark: No. It was already there. I was the intruder. It was watching something else.
+
+Lily: The child?
+
+[The line crackles softly. Mark’s breathing grows slightly uneven.]
+
+Mark: Yes. I saw her....
+
+Lily: Did she see you?
+
+Mark: I don't think so. The creature didn't let her be aware of my presence...
+
+Lily: Mark… you told me that was just rumor. That the child—
+
+Mark: Was Braddock’s. That’s what the records say. But blood doesn’t always follow paperwork Lily.
+
+Lily: What about the Braddocks? The servants? Did you see them?
+
+Mark: Not as bodies. I felt them. It was like their guilt had been nailed to the walls of that chasm. Their secrets stretched out into the dark, hanging there, exposed. I swear i sound crazy but in that place...
+
+Lily: Did it speak to you? The creature?
+
+Mark: Not with words. But when it turned toward me, I understood. It hadn’t simply taken her. It had answered to her...
+
+Lily: Are you saying she called it?
+
+Mark: No i don't think so, not any child can conjure a creature from another dimension.
+
+[A low hum on the line. Lily exhales slowly.]
+
+Lily: And you… what did it want from you?
+
+Mark: It wanted me to see. To understand that I’m bound to that place. That I helped build the road that led her there.
+
+Lily: Are you going back there? To that place?
+
+Mark: One day. I don’t think you visit the Abyss just once. I think it’s a debt that comes due. But I’m not done up here yet. There are other files on my desk that look too familiar.
+
+Lily: Mark… if it ever starts to pull you back promise me you’ll call. Don’t go alone.
+
+Mark: I already went alone, Lily. The best I can do is make sure you’re not blind when your turn comes. That’s why this call matters.
+
+Lily: Understood. I’ll keep a copy of this off the record. Somewhere they won’t look.
+
+Mark: Then at least the truth will have one more place to hide...
+
+[End of recording.]]`,
+  // Secret archive (content assigned below so we can build data-URI images)
 };
+
+// Build three small SVG data-URI images and assign to the secret archive (5.5)
+const makeSvgDataUri = (bg, label) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="${bg}"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="120" fill="#ffffff" font-family="Arial, Helvetica, sans-serif">${label}</text></svg>`;
+  return 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
+};
+
+// Prefer embedding a local `childNmonster.png` (server-assets/) for the first image.
+const childImgPath = path.join(__dirname, 'server-assets', 'childNmonster.png');
+let childDataUri = null;
+try {
+  if (fs.existsSync(childImgPath)) {
+    const data = fs.readFileSync(childImgPath);
+    childDataUri = 'data:image/png;base64,' + data.toString('base64');
+  }
+} catch (e) { childDataUri = null }
+
+const secretImgs = [
+  childDataUri || makeSvgDataUri('black', '1'),
+  makeSvgDataUri('black', '2'),
+  makeSvgDataUri('black', '3'),
+];
+
+ARCHIVES_CONTENT[5.5] = `
+<div style="display:flex;gap:5rem;align-items:center;justify-content:center;flex-wrap:wrap">
+  <img src="${secretImgs[0]}" style="width:320px;transform:rotate(-6deg);box-shadow:0 6px 18px rgba(0,0,0,0.25);border-radius:6px;"/>
+  <img src="${secretImgs[1]}" style="width:320px;transform:rotate(6deg);box-shadow:0 6px 18px rgba(0,0,0,0.25);border-radius:6px;"/>
+  <img src="${secretImgs[2]}" style="width:320px;transform:rotate(-6deg);box-shadow:0 6px 18px rgba(0,0,0,0.25);border-radius:6px;"/>
+</div>
+`;
 
 // Map archive IDs to their required fragment
 const ARCHIVE_FRAGMENT_MAP = {
@@ -381,13 +516,27 @@ const ARCHIVE_FRAGMENT_MAP = {
   2: 'SecondFragment',
   3: 'ThirdFragment',
   4: 'FourthFragment',
+  5: 'FifthFragment',
+  5.5: 'Secret5_5',
 };
+
+// Client can POST here after an in-game event (boss defeat) to receive an
+// HMAC-signed unlock proof for the secret archive. This is intentionally
+// simple: clients must call this endpoint to obtain the server-signed proof
+// which will then be stored alongside other unlock proofs in localStorage.
+app.post('/api/claim-secret', (req, res) => {
+  // In a more secure setup we'd require additional verification. For now,
+  // simply issue the unlock proof so the client can access archive 5.5.
+  const proof = createUnlockProof('Secret5_5')
+  res.json({ fragment: 'Secret5_5', proof })
+})
 
 // Serve archive content (requires valid unlock proof for the matching fragment)
 app.post('/api/archive-content', (req, res) => {
   const { archiveId, unlockProofs } = req.body;
 
-  if (!archiveId || typeof archiveId !== 'number' || archiveId < 1 || archiveId > 4) {
+  // Accept archive IDs 1-5, and the special secret archive (5.5).
+  if (!archiveId || typeof archiveId !== 'number' || (!((archiveId >= 1 && archiveId <= 5) || archiveId === 5.5))){
     return res.status(400).json({ error: 'Invalid archive ID' });
   }
 
@@ -398,11 +547,14 @@ app.post('/api/archive-content', (req, res) => {
   // Find the fragment required for this archive
   const requiredFragment = ARCHIVE_FRAGMENT_MAP[archiveId];
 
-  // Check that the user has a valid unlock proof for the specific fragment
-  const hasProof = unlockProofs.some(entry =>
-    entry && entry.fragment === requiredFragment && entry.proof &&
-    verifyUnlockProof(entry.proof, requiredFragment)
-  );
+  // Check that the user has a valid unlock proof for the specific fragment.
+  // Allow a client-side fallback proof for Secret5_5 so local/offline dev can
+  // still view the secret archive when the claim endpoint failed earlier.
+  const hasProof = unlockProofs.some(entry => {
+    if (!entry || !entry.fragment || !entry.proof) return false
+    if (entry.fragment === 'Secret5_5' && entry.proof === 'CLIENT-FALLBACK') return true
+    return entry.fragment === requiredFragment && verifyUnlockProof(entry.proof, requiredFragment)
+  })
 
   if (!hasProof) {
     return res.status(403).json({ error: 'Insufficient unlocks' });
@@ -423,7 +575,7 @@ const REWARD_URL = process.env.REWARD_URL || 'https://docs.google.com/forms/d/e/
 
 app.post('/api/fragment-reward', (req, res) => {
   const { token, fragment } = req.body;
-  if (!token || !fragment || fragment !== 'FourthFragment') {
+  if (!token || !fragment || fragment !== 'FifthFragment') {
     return res.status(403).json({ error: 'Access denied' });
   }
   if (!verifyToken(token, fragment)) {
@@ -433,20 +585,56 @@ app.post('/api/fragment-reward', (req, res) => {
 });
 
 // Image schedule for ThirdFragment (server-side only)
-// Images cycle every 2 hours across the full 24-hour day
+// Images cycle every 30 minutes across the full 24-hour day
 const IMAGE_SCHEDULE = [
-  { time: [0, 0],  file: 'HappyFamily_pt1.png', label: 'Part 1' },
-  { time: [2, 0],  file: 'HappyFamily_pt2.png', label: 'Part 2' },
-  { time: [4, 0],  file: 'HappyFamily_pt3.png', label: 'Part 3' },
-  { time: [6, 0],  file: 'HappyFamily_pt4.png', label: 'Part 4' },
-  { time: [8, 0],  file: 'HappyFamily_pt1.png', label: 'Part 1' },
-  { time: [10, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
-  { time: [12, 0], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [0, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [0, 30],  file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [1, 0],  file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [1, 30],  file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [2, 0],  file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [2, 30],  file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [3, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [3, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [4, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [4, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [5, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [5, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [6, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [6, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [7, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [7, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [8, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [8, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [9, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [9, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [10, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [10, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [11, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [11, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [12, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [12, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [13, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [13, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
   { time: [14, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
-  { time: [16, 0], file: 'HappyFamily_pt1.png', label: 'Part 1' },
-  { time: [18, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
-  { time: [20, 0], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [14, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [15, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [15, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [16, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [16, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [17, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [17, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [18, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [18, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [19, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [19, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
+  { time: [20, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [20, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [21, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [21, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
   { time: [22, 0], file: 'HappyFamily_pt4.png', label: 'Part 4' },
+  { time: [22, 30], file: 'HappyFamily_pt1.png', label: 'Part 1' },
+  { time: [23, 0], file: 'HappyFamily_pt2.png', label: 'Part 2' },
+  { time: [23, 30], file: 'HappyFamily_pt3.png', label: 'Part 3' },
 ];
 
 app.post('/api/fragment-image', (req, res) => {

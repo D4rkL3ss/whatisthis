@@ -1,33 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './CSS/ForthFragment.css'
 import { playClick } from '../utils/playClick'
 import { useTokenVerification } from '../utils/useTokenVerification'
+import MazeGame from './MazeGame'
 
 function FourthFragment({ onGoBack, token }: { onGoBack: () => void; token: string | null }) {
   const status = useTokenVerification(token, 'FourthFragment')
-  const [rewardUrl, setRewardUrl] = useState<string | null>(null)
+  const [gameCompleted, setGameCompleted] = useState(() => localStorage.getItem('maze_completed') === 'true')
 
   const handleGoBack = () => {
     playClick()
     onGoBack()
   }
 
-  useEffect(() => {
-    if (status !== 'verified' || !token) return
-
-    const endpoint = window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api/fragment-reward'
-      : '/api/fragment-reward'
-
-    fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, fragment: 'FourthFragment' })
-    })
-      .then(res => res.json())
-      .then(data => { if (data.url) setRewardUrl(data.url) })
-      .catch(() => {})
-  }, [status, token])
+  const handleGameComplete = () => {
+    localStorage.setItem('maze_completed', 'true')
+    setGameCompleted(true)
+  }
 
   if (status === 'loading') {
     return <div className="fourth-fragment-page"><div className="container"><p style={{ color: '#aaa', fontSize: '1.2rem' }}>Verifying access...</p></div></div>
@@ -58,18 +47,21 @@ function FourthFragment({ onGoBack, token }: { onGoBack: () => void; token: stri
       >
         ← Back
       </button>
-      <div className="coming-soon-container">
-        <div className="coming-soon-icon">🔮</div>
-        <h1 className="coming-soon-title">The Abyss Stirs</h1>
-        <p className="coming-soon-text">This fragment has not yet surfaced from the depths.</p>
-        <div className="coming-soon-divider"></div>
-        <p className="coming-soon-subtext">Something is forming in the void. Return when the shadows call.</p>
-        {rewardUrl && (
-          <button className="coming-soon-hint" onClick={() => window.open(rewardUrl, '_blank')}>
-            Get your reward here
-          </button>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
+        {gameCompleted ? (
+          <>
+            <div className="coming-soon-container">
+              <h1 className="coming-soon-title" style={{ color: '#7b5ea7' }}>The Labyrinth is Conquered</h1>
+              <div className="coming-soon-divider"></div>
+              <p className="coming-soon-subtext">You have already emerged from the Abyss.</p>
+              <button className="coming-soon-hint" onClick={() => { setGameCompleted(false); localStorage.removeItem('maze_completed') }}>
+                Descend Again
+              </button>
+            </div>
+          </>
+        ) : (
+          <MazeGame onComplete={handleGameComplete} />
         )}
-        <div className="coming-soon-pulse"></div>
       </div>
     </div>
   )

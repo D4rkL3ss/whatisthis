@@ -730,7 +730,7 @@ function App() {
       )}
       {/* Version footer */}
       <div style={{ position: 'fixed', right: '12px', bottom: '8px', fontSize: '0.9rem', color: '#aaa', opacity: 0.95 }}>
-        v1.2
+        v1.26 Happi
       </div>
     </>
   )

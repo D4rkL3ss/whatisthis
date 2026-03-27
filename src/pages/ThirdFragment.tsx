@@ -12,42 +12,56 @@ function ThirdFragment({ onGoBack, token }: { onGoBack: () => void; token: strin
     onGoBack()
   }
 
-  // Fetch the active image from the server (schedule is server-side only)
   useEffect(() => {
-    if (status !== 'verified' || !token) return
+  if (status !== 'verified' || !token) return;
 
-    const endpoint = window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api/fragment-image'
-      : '/api/fragment-image'
+  const apiHost = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  let currentBlobUrl: string | null = null;
 
-    const update = () => {
-      fetch(endpoint, {
+  const update = async () => {
+    try {
+      // 1. Check if an image is available in the current time slot
+      const res = await fetch(`${apiHost}/api/fragment-image`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, fragment: 'ThirdFragment' })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.available && data.imageUrl) {
-            const imageFullUrl = window.location.hostname === 'localhost'
-              ? `http://localhost:3001${data.imageUrl}`
-              : data.imageUrl
-            setCurrentImage(imageFullUrl)
-            setDownloadUrl(imageFullUrl)
-          } else {
-            setCurrentImage(null)
-            setDownloadUrl(null)
-          }
-        })
-        .catch(() => {
-          setCurrentImage(null)
-          setDownloadUrl(null)
-        })
+      });
+      const data = await res.json();
+
+      if (data.available && data.imageUrl) {
+        // 2. Fetch the actual protected asset as a Blob
+        const assetRes = await fetch(`${apiHost}${data.imageUrl}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (assetRes.ok) {
+          const blob = await assetRes.blob();
+          const secureUrl = URL.createObjectURL(blob);
+
+          // Cleanup the OLD blob URL before setting the new one to save memory
+          if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+          
+          currentBlobUrl = secureUrl;
+          setCurrentImage(secureUrl);
+          setDownloadUrl(secureUrl);
+        }
+      } else {
+        setCurrentImage(null);
+        setDownloadUrl(null);
+      }
+    } catch (error) {
+      console.error("Third Fragment Security Error:", error);
     }
-    update()
-    const interval = setInterval(update, 60000)
-    return () => clearInterval(interval)
-  }, [status, token])
+  };
+
+  update();
+  const interval = setInterval(update, 60000);
+
+  return () => {
+    clearInterval(interval);
+    if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+  };
+}, [status, token]);
 
   if (status === 'loading') {
     return <div className="third-fragment-page"><div className="container"><p style={{ color: '#aaa', fontSize: '1.2rem' }}>Verifying access...</p></div></div>

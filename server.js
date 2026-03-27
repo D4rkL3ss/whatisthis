@@ -146,14 +146,24 @@ function generateToken(fragment) {
   return token;
 }
 
-function verifyToken(token, fragment) {
+// --- Update verifyToken to allow "consuming" the token ---
+function verifyToken(token, fragment, consume = false) {
   const entry = tokenStore.get(token);
   if (!entry) return false;
+  
   if (Date.now() - entry.createdAt > TOKEN_TTL) {
     tokenStore.delete(token);
     return false;
   }
-  return entry.fragment === fragment;
+  
+  if (entry.fragment !== fragment) return false;
+
+  // IMPORTANT: Delete the token so it can't be used twice
+  if (consume) {
+    tokenStore.delete(token);
+  }
+  
+  return true;
 }
 
 // Create an HMAC-signed unlock proof for a fragment
@@ -728,17 +738,22 @@ const PROTECTED_ASSETS = {
   'HappyFamily_pt4.png': 'ThirdFragment',
 };
 
+// --- Update the asset route ---
 app.get('/api/protected-asset/:filename', (req, res) => {
-  const { token } = req.query;
+  // Check for token in Authorization Header (Bearer Token)
+  const authHeader = req.headers['authorization'];
+  const token = (authHeader && authHeader.startsWith('Bearer ')) 
+                ? authHeader.slice(7) 
+                : req.query.token; // Fallback to query for now
+
   const filename = req.params.filename;
   const requiredFragment = PROTECTED_ASSETS[filename];
 
-  if (!requiredFragment) {
-    return res.status(404).json({ error: 'Not found' });
-  }
+  if (!requiredFragment) return res.status(404).json({ error: 'Not found' });
 
-  if (!token || !verifyToken(token, requiredFragment)) {
-    return res.status(403).json({ error: 'Access denied' });
+  // Use 'true' here to consume the token after one successful fetch
+  if (!token || !verifyToken(token, requiredFragment, true)) {
+    return res.status(403).json({ error: 'Access denied or link expired' });
   }
 
   const assetPath = path.join(__dirname, 'server-assets', filename);

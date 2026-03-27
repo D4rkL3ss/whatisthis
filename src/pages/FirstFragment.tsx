@@ -13,28 +13,38 @@ function FirstFragment({ onGoBack, token }: { onGoBack: () => void; token: strin
   }
 
   useEffect(() => {
-    if (status !== 'verified' || !token) return
+  if (status !== 'verified' || !token) return
 
-    const endpoint = window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api/fragment-asset'
-      : '/api/fragment-asset'
+  const apiHost = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
-    fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, fragment: 'FirstFragment' })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.assetUrl) {
-          const url = window.location.hostname === 'localhost'
-            ? `http://localhost:3001${data.assetUrl}`
-            : data.assetUrl
-          setAssetUrl(url)
+  // Step 1: Get the filename from /api/fragment-asset
+  fetch(`${apiHost}/api/fragment-asset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, fragment: 'FirstFragment' })
+  })
+    .then(res => res.json())
+    .then(async (data) => {
+      if (data.assetUrl) {
+        // Step 2: SECURE FETCH the actual file using the token in the header
+        const assetRes = await fetch(`${apiHost}${data.assetUrl}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (assetRes.ok) {
+          const blob = await assetRes.blob();
+          const secureUrl = URL.createObjectURL(blob); // Creates a blob: URL
+          setAssetUrl(secureUrl);
         }
-      })
-      .catch(() => {})
-  }, [status, token])
+      }
+    })
+    .catch(() => {});
+
+  // Cleanup the blob URL when the component unmounts to save memory
+  return () => {
+    if (assetUrl) URL.revokeObjectURL(assetUrl);
+  };
+}, [status, token]);
 
   if (status === 'loading') {
     return <div className="first-fragment-page"><div className="container"><p style={{ color: '#aaa', fontSize: '1.2rem' }}>Verifying access...</p></div></div>
